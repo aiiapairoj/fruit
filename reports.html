@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายงานและวิเคราะห์ข้อมูล | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="reports" data-loc="อำเภอบางเลน จ.นครปฐม" data-search="ค้นหาสวน แปลง ต้นไม้ หรือรายงาน...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <div>
+      <h1 class="text-[28px] font-bold leading-tight">รายงานและวิเคราะห์ข้อมูล</h1>
+      <p class="muted mt-1 text-[15px]">รายงาน สรุปผล และวิเคราะห์ข้อมูลเพื่อการตัดสินใจในการบริหารจัดการสวนผลไม้</p>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4"></section>
+
+    <!-- Filters -->
+    <section class="flex flex-wrap gap-3 items-stretch no-print">
+      <label class="card flex items-center gap-3 px-3 py-2 min-w-[240px] flex-1 cursor-pointer"><i data-lucide="calendar-days" class="w-5 h-5 muted"></i><span class="flex-1"><span class="block text-[11.5px] muted">ช่วงเวลา</span><select id="fRange" class="w-full bg-transparent font-medium outline-none"><option value="2567">ม.ค. 2567 - ธ.ค. 2567</option><option value="2566">ม.ค. 2566 - ธ.ค. 2566</option></select></span></label>
+      <label class="card flex items-center gap-3 px-3 py-2 min-w-[200px] flex-1 cursor-pointer"><i data-lucide="trees" class="w-5 h-5 text-green-600"></i><span class="flex-1"><span class="block text-[11.5px] muted">สวน/แปลง</span><select id="fFarm" class="w-full bg-transparent font-medium outline-none"><option value="">ทุกสวน</option></select></span></label>
+      <label class="card flex items-center gap-3 px-3 py-2 min-w-[200px] flex-1 cursor-pointer"><span id="appleIco"></span><span class="flex-1"><span class="block text-[11.5px] muted">ชนิดพืช</span><select id="fCrop" class="w-full bg-transparent font-medium outline-none"><option value="">ทุกชนิด</option><option>ทุเรียน</option><option>มังคุด</option><option>มะม่วง</option><option>เงาะ</option><option>ลำไย</option></select></span></label>
+      <button class="btn btn-green !px-8" id="btnView">ดูรายงาน</button>
+      <button class="btn" id="btnReset"><i data-lucide="rotate-ccw"></i>รีเซ็ต</button>
+      <button class="btn btn-soft-red !px-6" id="btnPdf"><i data-lucide="file-text"></i>ส่งออก PDF</button>
+      <button class="btn btn-soft-green !px-6" id="btnXlsx"><i data-lucide="file-spreadsheet"></i>ส่งออก Excel</button>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 xl:col-span-5">
+        <div class="card-h"><h2 class="card-t">ผลผลิตรายเดือน แยกตามชนิดผลไม้</h2><select class="sel sel-sm" id="prodMode"><option value="m">รายเดือน</option><option value="q">รายไตรมาส</option></select></div>
+        <div class="relative flex items-center justify-center h-[290px]"><canvas id="prodChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-7 xl:col-span-4">
+        <div class="card-h"><h2 class="card-t">แนวโน้มผลผลิตและรายได้</h2><select class="sel sel-sm"><option>รายเดือน</option></select></div>
+        <div class="relative flex items-center justify-center h-[290px]"><canvas id="trendChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-5 xl:col-span-3">
+        <h2 class="card-t mb-3">สัดส่วนต้นทุนการผลิต</h2>
+        <div class="relative flex items-center justify-center h-[190px]"><canvas id="costChart" class="max-w-full"></canvas><div class="absolute inset-0 grid place-items-center pointer-events-none text-center"><div><div class="text-[24px] font-bold leading-none">4.52</div><div class="text-[12px]">ล้านบาท</div><div class="text-[11px] muted">ต้นทุนรวม</div></div></div></div>
+        <ul id="costLegend" class="space-y-1.5 mt-3 text-[12.5px]"></ul>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-5">
+        <div class="card-h"><h2 class="card-t">สรุปรายงานผลผลิตรายสวน/แปลง</h2><button class="lnk" id="allRows">ดูทั้งหมด<i data-lucide="arrow-right"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>สวน/แปลง</th><th>แปลง</th><th>ชนิดพืช</th><th class="num">ผลผลิต (ตัน)</th><th class="num">รายได้ (บาท)</th><th>สถานะ</th><th>จัดการ</th><th></th></tr></thead><tbody id="sumBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">รายงานสำเร็จรูป</h2><button class="lnk" data-toast="รายงานทั้งหมด 12 แบบ (Phase 2)">ดูทั้งหมด<i data-lucide="arrow-right"></i></button></div>
+        <div id="ready" class="divide-line"></div>
+      </div>
+      <div class="col-span-12 md:col-span-6 2xl:col-span-4 space-y-4">
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t"><i data-lucide="sparkles" class="w-5 h-5 text-amber-500"></i>AI ข้อเสนอแนะเชิงลึก</h2><a href="ai-advisor.html" class="lnk">ดูทั้งหมด<i data-lucide="arrow-right"></i></a></div>
+          <div id="aiIns" class="divide-line"></div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t">ประวัติการส่งออกรายงาน</h2><button class="lnk" data-toast="ดูประวัติการส่งออกทั้งหมด (audit_logs: export)">ดูทั้งหมด<i data-lucide="arrow-right"></i></button></div>
+          <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>วันที่</th><th>ชื่อรายงาน</th><th>รูปแบบ</th><th>ผู้ดำเนินการ</th></tr></thead><tbody id="histBody"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/reports/yield?year=2567 ===== */
+const KPIS = [
+  { icon: 'apple', tone: 'green', label: 'ผลผลิตรวมทั้งหมด', value: '2,842', unit: 'ตัน', foot: '+12% จากช่วงเดียวกันปีที่แล้ว', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'coins', tone: 'orange', label: 'รายได้ประมาณการ', value: '12.68', unit: 'ล้านบาท', foot: '+18% จากช่วงเดียวกันปีที่แล้ว', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'hand-coins', tone: 'red', label: 'ต้นทุนการผลิตรวม', value: '4.52', unit: 'ล้านบาท', foot: '+6% จากช่วงเดียวกันปีที่แล้ว', footIcon: 'triangle', footTone: 'red-600' },
+  { icon: 'sprout', tone: 'green', label: 'สุขภาพต้นไม้เฉลี่ย', value: '86.5', unit: 'คะแนน', foot: '+4% จากเดือนที่ผ่านมา', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'calendar-days', tone: 'orange', label: 'ความพร้อมเก็บเกี่ยว', value: '72%', foot: 'พร้อมเก็บเกี่ยว 842 ต้น' },
+  { icon: 'target', tone: 'green', label: 'ความแม่นยำ AI', value: '93.2%', foot: '+2.5% จากเดือนที่ผ่านมา', footIcon: 'triangle', footTone: 'green-600' }
+];
+const M = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+const PROD = {
+  durian: [55, 70, 95, 90, 110, 140, 95, 75, 60, 75, 105, 80], mangosteen: [35, 45, 60, 55, 70, 85, 55, 45, 35, 45, 70, 50],
+  mango: [30, 45, 55, 50, 60, 70, 50, 40, 35, 40, 60, 45], rambutan: [30, 40, 50, 50, 55, 70, 50, 40, 35, 40, 55, 45], longan: [30, 40, 50, 50, 60, 70, 50, 40, 30, 40, 60, 40]
+};
+const TREND = { p: [190, 240, 300, 305, 410, 420, 320, 250, 230, 260, 280, 320], r: [0.75, 0.85, 0.95, 1.15, 1.4, 1.65, 1.4, 0.9, 0.75, 0.85, 1.0, 1.2] };
+const COST = [{ n: 'ปุ๋ยและสารอาหาร', p: 38, v: 1.72, c: '#43a047' }, { n: 'สารกำจัดศัตรูพืช', p: 22, v: 0.99, c: '#8e5bd6' }, { n: 'ค่าแรงงาน', p: 18, v: 0.81, c: '#f5c518' }, { n: 'ค่าน้ำ/พลังงาน', p: 10, v: 0.45, c: '#e53935' }, { n: 'อุปกรณ์/ซ่อมบำรุง', p: 7, v: 0.32, c: '#b07d4f' }, { n: 'อื่น ๆ', p: 5, v: 0.23, c: '#d5dbd6' }];
+const SUM = [
+  { f: 'สวนบ้านป่าเหนือ', p: 'A1', k: 'durian', t: 420.0, b: 3780000, st: 'เสร็จสิ้น', tone: 'green', seed: 1 }, { f: 'สวนเนินเขา', p: 'A2', k: 'mangosteen', t: 280.5, b: 2524500, st: 'เสร็จสิ้น', tone: 'green', seed: 2 },
+  { f: 'สวนคลองส้ม', p: 'B1', k: 'mango', t: 320.0, b: 1920000, st: 'กำลังเก็บเกี่ยว', tone: 'orange', seed: 3 }, { f: 'สวนพระยาธิก', p: 'B2', k: 'durian', t: 260.2, b: 2341800, st: 'เสร็จสิ้น', tone: 'green', seed: 4 },
+  { f: 'สวนดอยตะวัน', p: 'C1', k: 'rambutan', t: 310.0, b: 1860000, st: 'กำลังเก็บเกี่ยว', tone: 'orange', seed: 5 }, { f: 'สวนลำไยทอง', p: 'C2', k: 'longan', t: 200.8, b: 1203600, st: 'วางแผนการผลิต', tone: 'blue', seed: 6 }
+];
+const READY = [
+  { icon: 'chart-column', t: 'รายงานผลผลิต', d: 'สรุปปริมาณผลผลิต รายเดือน รายสวน' }, { icon: 'sprout', t: 'รายงานการใช้ปุ๋ย', d: 'ปริมาณการใช้ปุ๋ย และประสิทธิภาพ' },
+  { icon: 'bug', t: 'รายงานโรคและแมลง', d: 'สรุปการระบาด การจัดการและแนวโน้ม', red: true }, { icon: 'calendar-days', t: 'รายงานคาดการณ์เก็บเกี่ยว', d: 'ประมาณการผลผลิตและช่วงเวลาเก็บเกี่ยว', orange: true },
+  { icon: 'wifi', t: 'รายงานจากเซ็นเซอร์ IoT', d: 'สรุปข้อมูลสภาพแวดล้อมและความชื้น' }
+];
+const AIINS = [
+  { icon: 'sprout', tone: 'green', t: 'เพิ่มการให้ปุ๋ยในแปลง A1', d: 'จากการวิเคราะห์ข้อมูล พบว่าต้นทุเรียนในแปลง A1 ควรเพิ่มปุ๋ยโพแทสเซียมใน 2 สัปดาห์', tag: 'แนะนำ', tt: 'green', href: 'fertilizer-plans.html' },
+  { icon: 'bug', tone: 'red', t: 'เฝ้าระวังเพลี้ยไฟในแปลง B2', d: 'ตรวจพบความเสี่ยงการระบาด 72% แนะนำให้พ่นสารป้องกันภายใน 7 วัน', tag: 'เฝ้าระวัง', tt: 'orange', href: 'pest-management.html' },
+  { icon: 'chart-column', tone: 'blue', t: 'แนวโน้มผลผลิตสูงกว่าคาด', d: 'AI คาดการณ์ว่าผลผลิตทุเรียนจะสูงกว่าปีที่แล้ว 15% จากสภาพอากาศที่เอื้ออำนวย', tag: 'โอกาสดี', tt: 'green', href: 'harvest-forecast.html' }
+];
+let HIST = [
+  { d: '22 เม.ย. 2568 09:15', n: 'รายงานผลผลิตรายเดือน', f: 'PDF', by: 'สมชาย ใจดี' }, { d: '21 เม.ย. 2568 14:30', n: 'รายงานการใช้ปุ๋ย', f: 'Excel', by: 'สมชาย ใจดี' },
+  { d: '20 เม.ย. 2568 16:20', n: 'รายงานคาดการณ์เก็บเกี่ยว', f: 'PDF', by: 'สมชาย ใจดี' }, { d: '18 เม.ย. 2568 10:05', n: 'รายงานโรคและแมลง', f: 'Excel', by: 'สมชาย ใจดี' }
+];
+
+/* ===== Render ===== */
+UI.mountKpis('#kpis', KPIS);
+$('#appleIco').innerHTML = fruitSvg('mango', 26);
+$('#fFarm').innerHTML += SUM.map(s => `<option>${s.f}</option>`).join('');
+const PCOL = { durian: '#43a047', mangosteen: '#8e5bd6', mango: '#f5c518', rambutan: '#e53935', longan: '#b07d4f' };
+let prodC;
+function drawProd() {
+  const crop = $('#fCrop').value, q = $('#prodMode').value === 'q';
+  const agg = arr => q ? [0, 1, 2, 3].map(i => arr.slice(i * 3, i * 3 + 3).reduce((a, b) => a + b, 0)) : arr;
+  if (prodC) { prodC.destroy(); Charts.list = Charts.list.filter(c => c !== prodC); }
+  prodC = Charts.make('prodChart', { type: 'bar', data: { labels: q ? ['ไตรมาส 1', 'ไตรมาส 2', 'ไตรมาส 3', 'ไตรมาส 4'] : M,
+    datasets: Object.keys(PROD).filter(k => !crop || FRUIT[k].th === crop).map(k => ({ label: FRUIT[k].th, data: agg(PROD[k]), backgroundColor: PCOL[k], maxBarThickness: 28 })) },
+    options: { scales: { x: { stacked: true, grid: { display: false } }, y: { stacked: true, beginAtZero: true, title: { display: true, text: 'ผลผลิต (ตัน)' } } }, plugins: { legend: { align: 'center' } } } });
+}
+drawProd();
+$('#prodMode').onchange = drawProd;
+Charts.make('trendChart', { type: 'line', data: { labels: M, datasets: [
+  { label: 'ผลผลิต (ตัน)', data: TREND.p, borderColor: '#2e8b47', backgroundColor: Charts.fade('#2e8b47', .12), fill: true, tension: .3, yAxisID: 'y', pointRadius: 4, pointBackgroundColor: '#2e8b47' },
+  { label: 'รายได้ (ล้านบาท)', data: TREND.r, borderColor: '#F58A25', tension: .3, yAxisID: 'y1', pointRadius: 4, pointBackgroundColor: '#F58A25' }] },
+  options: { interaction: { mode: 'index', intersect: false }, plugins: { legend: { align: 'center' } }, scales: { y: { min: 0, max: 500, ticks: { stepSize: 100 }, title: { display: true, text: 'ผลผลิต (ตัน)' } }, y1: { position: 'right', min: 0, max: 2.5, grid: { display: false }, ticks: { stepSize: .5 }, title: { display: true, text: 'รายได้ (ล้านบาท)' } }, x: { grid: { display: false } } } } });
+Charts.make('costChart', { type: 'doughnut', data: { labels: COST.map(c => c.n), datasets: [{ data: COST.map(c => c.v), backgroundColor: COST.map(c => c.c), borderWidth: 0 }] }, options: { cutout: '62%', plugins: { legend: { display: false } } } });
+$('#costLegend').innerHTML = COST.map(c => `<li class="flex items-center gap-2"><i class="w-3 h-3 rounded-full inline-block" style="background:${c.c}"></i><span class="flex-1">${c.n}</span><span class="w-10 text-right">${c.p}%</span><span class="w-[62px] text-right muted">${c.v.toFixed(2)} ลบ.</span></li>`).join('');
+
+function renderSum() {
+  const f = $('#fFarm').value, crop = $('#fCrop').value;
+  $('#sumBody').innerHTML = SUM.filter(s => (!f || s.f === f) && (!crop || FRUIT[s.k].th === crop)).map(s => `<tr><td class="whitespace-nowrap"><span class="inline-flex items-center gap-2"><span class="w-9 h-7 inline-block">${scene('orchard', 'h-full !rounded-md', s.seed)}</span>${s.f}</span></td><td>${s.p}</td><td class="whitespace-nowrap"><span class="inline-flex items-center gap-1.5">${fruitSvg(s.k, 22)}${FRUIT[s.k].th}</span></td><td class="num">${s.t.toFixed(1)}</td><td class="num">${nf(s.b)}</td><td>${UI.badge(s.st, s.tone)}</td><td><button class="btn btn-sm" data-rep="${s.p}">ดูรายงาน</button></td><td><button class="btn btn-sm !border-0 !px-1" data-menu="${s.p}" aria-label="เพิ่มเติม">${ic('ellipsis')}</button></td></tr>`).join('') || `<tr><td colspan="8" class="text-center muted py-6">ไม่พบข้อมูล</td></tr>`;
+  UI.icons();
+}
+renderSum();
+$('#ready').innerHTML = READY.map((r, i) => `<div class="flex items-center gap-3 py-2.5"><span class="ib ib-sm ${r.red ? 't-red' : r.orange ? 't-orange' : 't-green'}">${ic(r.icon)}</span><div class="flex-1 min-w-0"><b class="text-[13.5px]">${r.t}</b><div class="text-[11.5px] muted">${r.d}</div></div><button class="btn btn-sm btn-soft-green" data-make="${i}">สร้างรายงาน</button></div>`).join('');
+$('#aiIns').innerHTML = AIINS.map(a => `<a href="${a.href}" class="flex items-center gap-3 py-2.5"><span class="ib ib-sm t-${a.tone}">${ic(a.icon)}</span><div class="flex-1 min-w-0"><b class="text-[13.5px]">${a.t}</b><div class="text-[11.5px] muted">${a.d}</div></div>${UI.badge(a.tag, a.tt)}${ic('chevron-right', 'w-4 h-4 muted')}</a>`).join('');
+function renderHist() { $('#histBody').innerHTML = HIST.slice(0, 6).map(h => `<tr><td class="whitespace-nowrap">${h.d}</td><td>${h.n}</td><td><span class="inline-flex items-center gap-1 ${h.f === 'PDF' ? 'text-red-600' : 'text-green-700'}">${ic(h.f === 'PDF' ? 'file-text' : 'file-spreadsheet', 'w-4 h-4')}${h.f}</span></td><td class="whitespace-nowrap">${h.by}</td></tr>`).join(''); UI.icons(); }
+renderHist();
+
+/* ===== Export ===== */
+const nowTh = () => { const d = new Date(); return `${d.getDate()} ${TH_MONTH[d.getMonth()]} ${d.getFullYear() + 543} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+function logExport(name, fmt) { HIST.unshift({ d: nowTh(), n: name, f: fmt, by: APP.user.name }); renderHist(); }
+$('#btnXlsx').onclick = () => {
+  if (!window.XLSX) { UI.toast('ไม่สามารถโหลดไลบรารี Excel ได้', 'triangle-alert'); return; }
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['ตัวชี้วัด', 'ค่า', 'หน่วย'], ...KPIS.map(k => [k.label.replace(/<br>/g, ' '), k.value, k.unit || ''])]), 'สรุป KPI');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['เดือน', ...Object.keys(PROD).map(k => FRUIT[k].th), 'รวม'], ...M.map((m, i) => [m, ...Object.keys(PROD).map(k => PROD[k][i]), Object.keys(PROD).reduce((s, k) => s + PROD[k][i], 0)])]), 'ผลผลิตรายเดือน');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['เดือน', 'ผลผลิต (ตัน)', 'รายได้ (ล้านบาท)'], ...M.map((m, i) => [m, TREND.p[i], TREND.r[i]])]), 'แนวโน้มรายได้');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['หมวดต้นทุน', 'สัดส่วน (%)', 'ล้านบาท'], ...COST.map(c => [c.n, c.p, c.v])]), 'ต้นทุน');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['สวน', 'แปลง', 'ชนิดพืช', 'ผลผลิต (ตัน)', 'รายได้ (บาท)', 'สถานะ'], ...SUM.map(s => [s.f, s.p, FRUIT[s.k].th, s.t, s.b, s.st])]), 'รายสวน-แปลง');
+  XLSX.writeFile(wb, `BUGpairoj_Report_${$('#fRange').value}.xlsx`);
+  logExport('รายงานสรุปผลผลิตและต้นทุน', 'Excel');
+};
+$('#btnPdf').onclick = () => { logExport('รายงานสรุปผลผลิตและต้นทุน', 'PDF'); setTimeout(() => window.print(), 200); };
+$('#btnView').onclick = () => { drawProd(); renderSum(); UI.toast(`แสดงรายงาน ${$('#fRange').selectedOptions[0].text} · ${$('#fFarm').value || 'ทุกสวน'} · ${$('#fCrop').value || 'ทุกชนิด'}`); };
+$('#btnReset').onclick = () => { $('#fFarm').value = ''; $('#fCrop').value = ''; $('#fRange').value = '2567'; drawProd(); renderSum(); };
+$('#allRows').onclick = () => { $('#fFarm').value = ''; $('#fCrop').value = ''; renderSum(); };
+document.addEventListener('click', e => {
+  const mk = e.target.closest('[data-make]'); if (mk) { const r = READY[+mk.dataset.make];
+    UI.formModal(`สร้าง${r.t}`, [{ n: 'from', l: 'ตั้งแต่', t: 'date', v: '2024-01-01', req: true }, { n: 'to', l: 'ถึง', t: 'date', v: '2024-12-31', req: true }, { n: 'farm', l: 'สวน', t: 'select', o: ['ทุกสวน', ...SUM.map(s => s.f)] }, { n: 'fmt', l: 'รูปแบบ', t: 'select', o: ['PDF', 'Excel', 'CSV (UTF-8 BOM)'] }],
+      { api: 'GET /api/v1/reports/{type}', onSave: d => logExport(r.t, d.fmt.startsWith('CSV') ? 'Excel' : d.fmt) }); return; }
+  const rp = e.target.closest('[data-rep]'); if (rp) { const s = SUM.find(x => x.p === rp.dataset.rep);
+    UI.modal({ title: `รายงานแปลง ${s.p} — ${s.f}`, saveText: '', body: `<div class="grid grid-cols-2 gap-3 text-[13.5px]"><div><div class="muted">ชนิดพืช</div><b>${FRUIT[s.k].th}</b></div><div><div class="muted">สถานะ</div>${UI.badge(s.st, s.tone)}</div><div><div class="muted">ผลผลิต</div><b>${s.t.toFixed(1)} ตัน</b></div><div><div class="muted">รายได้</div><b>${nf(s.b)} บาท</b></div><div><div class="muted">ราคาเฉลี่ย</div><b>${nf(s.b / (s.t * 1000), 2)} บาท/กก.</b></div><div><div class="muted">ต้นทุนต่อ กก. (ประมาณ)</div><b>${nf(4520000 / 2842000 * 1000 / 1000, 2)} บาท/กก.</b></div></div>` }); return; }
+  const m = e.target.closest('[data-menu]'); if (m) { e.stopPropagation(); UI.menu(m, [{ t: 'ดูการเติบโตของแปลง', icon: 'trending-up', href: 'growth-monitoring.html' }, { t: 'ตามสอบย้อนกลับ (Traceability)', icon: 'qr-code', onClick: () => UI.toast(`GET /api/v1/traceability/lots/LOT-67-${m.dataset.menu}`) }]); }
+});
+UI.icons();
+</script>
+</body>
+</html>

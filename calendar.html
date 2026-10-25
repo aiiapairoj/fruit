@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ปฏิทินงานสวน | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="calendar" data-loc="จ.จันทบุรี" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">ปฏิทินงานสวน</h1>
+        <p class="muted mt-1 text-[15px]">วางแผนและติดตามงานในสวน จัดการกิจกรรมตามช่วงเวลา สภาพอากาศ และระยะการเจริญเติบโต</p>
+      </div>
+      <div class="flex flex-wrap gap-2 items-center">
+        <button class="btn btn-green" data-form="task"><i data-lucide="plus"></i>เพิ่มงาน</button>
+        <button class="btn" id="btnFilter"><i data-lucide="filter"></i>ตัวกรอง</button>
+        <select class="sel w-auto" id="viewSel"><option>เดือน</option><option>สัปดาห์</option><option>รายการ</option></select>
+        <button class="btn btn-icon" id="mPrev" aria-label="เดือนก่อน"><i data-lucide="chevron-left"></i></button>
+        <span class="btn !cursor-default min-w-[140px]" id="mLabel">เมษายน 2568</span>
+        <button class="btn btn-icon" id="mNext" aria-label="เดือนถัดไป"><i data-lucide="chevron-right"></i></button>
+        <button class="btn" id="mToday">วันนี้</button>
+      </div>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <!-- Calendar + task list -->
+      <div class="col-span-12 xl:col-span-5 space-y-4">
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t" id="calTitle">ปฏิทินงาน เมษายน 2568</h2>
+            <div class="flex gap-1"><button class="btn btn-sm btn-icon !w-8 !h-8" id="cPrev" aria-label="ก่อนหน้า"><i data-lucide="chevron-left"></i></button><button class="btn btn-sm btn-icon !w-8 !h-8" id="cNext" aria-label="ถัดไป"><i data-lucide="chevron-right"></i></button><button class="btn btn-sm" id="cToday">วันนี้</button></div></div>
+          <div class="grid grid-cols-7 text-center text-[12.5px] font-medium muted pb-2"><span>อา.</span><span>จ.</span><span>อ.</span><span>พ.</span><span>พฤ.</span><span>ศ.</span><span>ส.</span></div>
+          <div id="calGrid" class="grid grid-cols-7 border-r border-b bline rounded-lg overflow-hidden"></div>
+          <div class="flex flex-wrap gap-4 mt-3 text-[12px]">
+            <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#43a047] inline-block"></i>เสร็จสิ้น</span>
+            <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#1e66d0] inline-block"></i>วันนี้</span>
+            <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#F58A25] inline-block"></i>ใกล้ถึงกำหนด</span>
+            <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#e53935] inline-block"></i>เลยกำหนด</span>
+            <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full bg-[#8e5bd6] inline-block"></i>เลื่อนงาน</span>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-h flex-wrap"><h2 class="card-t">รายการงานทั้งหมด</h2>
+            <div class="tabs" id="taskTabs">
+              <button class="tab on" data-tab="all">ทั้งหมด (24)</button><button class="tab t-blue" data-tab="today">วันนี้ (2)</button>
+              <button class="tab t-orange" data-tab="soon">ใกล้ถึงกำหนด (4)</button><button class="tab t-red" data-tab="overdue">เลยกำหนด (2)</button>
+              <button class="tab t-green" data-tab="done">เสร็จสิ้น (16)</button><button class="tab t-purple" data-tab="postponed">เลื่อนงาน (2)</button>
+            </div></div>
+          <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>วันที่</th><th>เวลา</th><th>งาน</th><th>แปลง/ต้นไม้</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th><th>การดำเนินการ</th></tr></thead><tbody id="taskBody"></tbody></table></div>
+        </div>
+      </div>
+
+      <!-- Today / upcoming -->
+      <div class="col-span-12 md:col-span-6 xl:col-span-4 space-y-4">
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t">งานวันนี้ 18 เมษายน 2568 <span class="bdg t-blue">2 งาน</span></h2><button class="lnk" data-tabjump="today">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+          <div id="todayList" class="space-y-3"></div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t">งานที่จะถึงกำหนด</h2><button class="lnk" data-tabjump="soon">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+          <div id="upList" class="divide-line"></div>
+        </div>
+        <div class="card card-pad">
+          <div class="flex flex-wrap gap-2">
+            <div class="relative flex-1 min-w-[160px]"><i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 muted"></i><input class="inp !pl-9 !py-2" id="tq" placeholder="ค้นหางาน..."></div>
+            <select class="sel w-auto !py-2" id="tPlot"><option value="">ทุกแปลง</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option><option>C2</option></select>
+            <button class="btn !py-2" id="btnExport"><i data-lucide="share"></i>Export</button>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t">ทีมงานในสวน</h2><a href="settings.html" class="lnk">ดูทั้งหมด<i data-lucide="chevron-right"></i></a></div>
+          <div id="teamList" class="divide-line"></div>
+        </div>
+      </div>
+
+      <!-- Weather + AI -->
+      <div class="col-span-12 md:col-span-6 xl:col-span-3 space-y-4">
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t">สภาพอากาศวันนี้</h2><a href="integrations.html" class="lnk">ดูพยากรณ์ 7 วัน<i data-lucide="chevron-right"></i></a></div>
+          <div class="text-[13px] muted">จ.จันทบุรี</div>
+          <div class="flex items-center gap-4 mt-2">
+            <div id="wxBig"></div>
+            <div><div class="text-[38px] font-bold leading-none">32°C</div><div class="mt-1">มีเมฆบางส่วน</div><div class="text-[12px] muted">โอกาสฝน 20%</div></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-4 text-[12.5px]">
+            <div class="flex items-center gap-2"><i data-lucide="droplet" class="w-5 h-5 text-blue-500"></i><div><div class="muted">ความชื้น</div><b>68%</b></div></div>
+            <div class="flex items-center gap-2"><i data-lucide="wind" class="w-5 h-5 text-sky-500"></i><div><div class="muted">ลม</div><b>9 กม./ชม.</b></div></div>
+            <div class="flex items-center gap-2"><i data-lucide="sun" class="w-5 h-5 text-amber-500"></i><div><div class="muted">UV</div><b>ปานกลาง</b></div></div>
+          </div>
+          <div class="rounded-xl t-green mt-4 p-3 flex gap-3 items-center">
+            <span class="ib ib-sm bg-white/70 dark:bg-transparent"><i data-lucide="leaf"></i></span>
+            <p class="text-[13px] text-[var(--text)]">สภาพอากาศเหมาะสำหรับ <b>งานตรวจต้น และให้น้ำ</b><br><span class="muted text-[12px]">แนะนำหลีกเลี่ยงการพ่นยาในช่วงบ่าย</span></p>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t"><i data-lucide="bot" class="w-5 h-5 text-orange-500"></i>AI แนะนำการวางแผนงาน</h2><a href="ai-advisor.html" class="lnk">ดูเพิ่มเติม<i data-lucide="chevron-right"></i></a></div>
+          <p class="text-[12.5px] muted -mt-1 mb-2">จากสภาพอากาศและระยะการเจริญเติบโต AI แนะนำให้ปรับแผนงานดังนี้</p>
+          <div id="aiList" class="divide-line"></div>
+          <p class="mt-2"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>AI สร้างได้เฉพาะ "งานฉบับร่าง" — ผู้จัดการต้องยืนยัน</span></p>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/tasks?from=&to= ===== */
+const TODAY = '2025-04-18'; // DEMO "วันนี้" ของปฏิทิน
+const TYPES = {
+  fert: { t: 'ใส่ปุ๋ย', icon: 'package' }, water: { t: 'ให้น้ำ', icon: 'droplet' }, spray: { t: 'พ่นยา', icon: 'sprout' },
+  inspect: { t: 'ตรวจต้น', icon: 'leaf' }, harvest: { t: 'เก็บเกี่ยว', icon: 'shopping-basket' }, prune: { t: 'ตัดแต่งกิ่ง', icon: 'scissors' }
+};
+const STATUS = {
+  done: { t: 'เสร็จสิ้น', pill: 'bg-[#e6f5e8] text-[#1f6b33] dark:bg-green-500/15 dark:text-green-300', tone: 'green' },
+  today: { t: 'วันนี้', pill: 'bg-[#e3eeff] text-[#1e56b0] dark:bg-blue-500/15 dark:text-blue-300', tone: 'green' },
+  soon: { t: 'ใกล้ถึงกำหนด', pill: 'bg-[#fff0dd] text-[#b55d0b] dark:bg-orange-500/15 dark:text-orange-300', tone: 'orange' },
+  overdue: { t: 'เลยกำหนด', pill: 'bg-[#fde5e5] text-[#b71c1c] dark:bg-red-500/15 dark:text-red-300', tone: 'red' },
+  postponed: { t: 'เลื่อนงาน', pill: 'bg-[#efe6ff] text-[#6a3fbf] dark:bg-purple-500/15 dark:text-purple-300', tone: 'purple' },
+  planned: { t: 'ตามแผน', pill: 'bg-[#efe6ff] text-[#6a3fbf] dark:bg-purple-500/15 dark:text-purple-300', tone: 'blue' }
+};
+let TASKS = [
+  { d: '2025-04-01', type: 'fert', plot: 'A1', crop: 'ทุเรียน', time: '08:00-10:00', by: 'นายสมชาย', st: 'done' },
+  { d: '2025-04-03', type: 'water', plot: 'A2', crop: 'ทุเรียน', time: '07:00-09:00', by: 'ทีมงานสวน', st: 'done' },
+  { d: '2025-04-05', type: 'spray', plot: 'B1', crop: 'มังคุด', time: '16:00-18:00', by: 'ทีมพ่นยา 1', st: 'done' },
+  { d: '2025-04-07', type: 'inspect', plot: 'A1', crop: 'ทุเรียน', time: '08:00-10:00', by: 'นายสมชาย', st: 'done', flag: true },
+  { d: '2025-04-10', type: 'spray', plot: 'C1', crop: 'เงาะ', time: '16:00-18:00', by: 'ทีมพ่นยา 2', st: 'done' },
+  { d: '2025-04-12', type: 'harvest', plot: 'B2', crop: 'ทุเรียน', time: '06:00-12:00', by: 'ทีมงานสวน', st: 'done' },
+  { d: '2025-04-14', type: 'water', plot: 'A1', crop: 'ทุเรียน', time: '07:00-09:00', by: 'ทีมงานสวน', st: 'done' },
+  { d: '2025-04-16', type: 'fert', plot: 'C2', crop: 'ลำไย', time: '09:00-11:00', by: 'ทีมงานสวน', st: 'overdue' },
+  { d: '2025-04-18', type: 'inspect', plot: 'A2', crop: 'ทุเรียน', time: '08:00-10:00', by: 'นายสมชาย', st: 'today', title: 'ตรวจต้น - สภาพศัตรูพืช' },
+  { d: '2025-04-18', type: 'water', plot: 'B1', crop: 'มังคุด', time: '14:00-16:00', by: 'ทีมงานสวน', st: 'today' },
+  { d: '2025-04-21', type: 'spray', plot: 'A1', crop: 'ทุเรียน', time: '08:00-12:00', by: 'นายสมชาย', st: 'soon', title: 'พ่นยา - ป้องกันโรค' },
+  { d: '2025-04-23', type: 'water', plot: 'C1', crop: 'เงาะ', time: '07:00-09:00', by: 'ทีมงานสวน', st: 'soon' },
+  { d: '2025-04-23', type: 'fert', plot: 'C2', crop: 'ลำไย', time: '09:00-11:00', by: 'ทีมงานสวน', st: 'soon', title: 'ใส่ปุ๋ย - สูตร 15-15-15', hideCal: true },
+  { d: '2025-04-25', type: 'fert', plot: 'B2', crop: 'ทุเรียน', time: '08:00-10:00', by: 'ทีมงานสวน', st: 'soon' },
+  { d: '2025-04-28', type: 'inspect', plot: 'C2', crop: 'ลำไย', time: '08:00-10:00', by: 'นายวิชัย', st: 'planned' },
+  { d: '2025-04-30', type: 'harvest', plot: 'A1', crop: 'ทุเรียน', time: '06:00-12:00', by: 'ทีมงานสวน', st: 'planned' }
+];
+const TEAM = [
+  { n: 'นายสมชาย ใจดี', r: 'หัวหน้าสวน', today: 2, done: 1 }, { n: 'นางสาวสมใจ แก้วดี', r: 'คนงานสวน', today: 1, done: 1 },
+  { n: 'นายวิชัย คำมาก', r: 'คนงานสวน', today: 1, done: 0 }, { n: 'นางสาวสมศรี ใจงาม', r: 'คนงานสวน', today: 0, done: 1 }
+];
+const AI = [
+  { icon: 'droplet', tone: 'blue', t: 'ควรเร่งให้น้ำแปลง A1 และ A2', d: 'เนื่องจากไม่มีฝนในช่วง 3 วันข้างหน้า', btn: 'เพิ่มในปฏิทิน', add: { d: '2025-04-19', type: 'water', plot: 'A1', crop: 'ทุเรียน', time: '07:00-09:00', by: 'ทีมงานสวน', st: 'soon' } },
+  { icon: 'sprout', tone: 'green', t: 'เหมาะสำหรับการพ่นยา', d: 'ในวันที่ 21-22 เม.ย. 2568 (อากาศแห้ง ลมสงบ)', btn: 'เพิ่มในปฏิทิน', add: { d: '2025-04-22', type: 'spray', plot: 'A2', crop: 'ทุเรียน', time: '16:00-18:00', by: 'ทีมพ่นยา 1', st: 'soon' } },
+  { icon: 'package', tone: 'orange', t: 'ควรใส่ปุ๋ยในช่วงต้นเดือน พ.ค.', d: 'เนื่องจากทุเรียนอยู่ในระยะสะสมอาหาร', btn: 'เพิ่มในปฏิทิน', add: { d: '2025-05-02', type: 'fert', plot: 'A1', crop: 'ทุเรียน', time: '08:00-10:00', by: 'ทีมงานสวน', st: 'planned' } },
+  { icon: 'shopping-basket', tone: 'orange', t: 'คาดการณ์เก็บเกี่ยวแปลง A1', d: 'ช่วงวันที่ 25 เม.ย. - 5 พ.ค. 2568', btn: 'ดูรายละเอียด', href: 'harvest-forecast.html' }
+];
+let viewY = 2025, viewM = 3, tabKey = 'all';
+const taskTitle = t => t.title || TYPES[t.type].t;
+const thFull = iso => { const d = new Date(iso); return `${d.getDate()} ${TH_MONTH_FULL[d.getMonth()]} ${d.getFullYear() + 543}`; };
+const daysFromToday = iso => Math.round((new Date(iso) - new Date(TODAY)) / 864e5);
+
+UI.mountKpis('#kpis', [
+  { icon: 'calendar-days', tone: 'green', label: 'งานทั้งหมด', value: '24', unit: 'งาน', foot: '+6 จากเดือนก่อน', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'circle-check', tone: 'green', label: 'เสร็จสิ้น', value: '16', unit: 'งาน', foot: '67% ของทั้งหมด' },
+  { icon: 'clock', tone: 'orange', label: 'ใกล้ถึงกำหนด', value: '4', unit: 'งาน', foot: '17% ของทั้งหมด', footTone: 'orange-600' },
+  { icon: 'triangle-alert', tone: 'red', label: 'เลยกำหนด', value: '2', unit: 'งาน', foot: '8% ของทั้งหมด', footTone: 'red-600' },
+  { icon: 'clock-arrow-up', tone: 'blue', label: 'เลื่อนงาน', value: '2', unit: 'งาน', foot: '8% ของทั้งหมด', footTone: 'blue-600' }
+]);
+$('#wxBig').innerHTML = Layout.wxIcon(84);
+
+function renderCal() {
+  const label = `${TH_MONTH_FULL[viewM]} ${viewY + 543}`;
+  $('#mLabel').textContent = label; $('#calTitle').textContent = `ปฏิทินงาน ${label}`;
+  const first = new Date(viewY, viewM, 1), start = new Date(viewY, viewM, 1 - first.getDay());
+  const weeks = Math.ceil((first.getDay() + new Date(viewY, viewM + 1, 0).getDate()) / 7);
+  let html = '';
+  for (let i = 0; i < weeks * 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const evs = TASKS.filter(t => t.d === iso && !t.hideCal);
+    const isToday = iso === TODAY, out = d.getMonth() !== viewM;
+    html += `<div class="cal-cell ${out ? 'out' : ''} ${isToday ? 'today' : ''}" data-date="${iso}">
+      <div class="flex items-center justify-between"><span class="dn text-[13px] ${isToday ? 'bg-[#1e66d0] text-white rounded-md px-1.5' : ''}">${d.getDate()}</span>${isToday ? '<span class="bdg !bg-[#2e8b47] text-white !text-[10.5px] !px-2 !py-0">วันนี้</span>' : ''}${evs.some(e => e.flag) ? '<i class="w-2 h-2 rounded-full bg-orange-500"></i>' : ''}</div>
+      ${evs.slice(0, 2).map((e, k) => `<div class="ev ${STATUS[e.st].pill}" data-ev="${TASKS.indexOf(e)}">${ic(e.st === 'overdue' ? 'triangle-alert' : TYPES[e.type].icon)}<span class="min-w-0"><b class="block truncate">${TYPES[e.type].t}</b><span class="block truncate opacity-80">${e.plot} ${e.crop}</span></span></div>`).join('')}
+      ${evs.length > 2 ? `<div class="text-[11px] muted mt-1">+${evs.length - 2} งาน</div>` : ''}</div>`;
+  }
+  $('#calGrid').innerHTML = html; UI.icons();
+}
+function taskRow(t) {
+  const st = STATUS[t.st], idx = TASKS.indexOf(t);
+  const action = t.st === 'today' ? `<button class="btn btn-green btn-sm" data-start="${idx}">เริ่มงาน</button>` : t.st === 'done' ? `<button class="lnk" data-view="${idx}">ดูผลงาน</button>` : `<button class="lnk" data-view="${idx}">ดูรายละเอียด</button>`;
+  return `<tr><td class="whitespace-nowrap">${thDate(t.d)}</td><td class="whitespace-nowrap">${t.time}</td><td class="whitespace-nowrap"><span class="inline-flex items-center gap-1.5">${ic(TYPES[t.type].icon, 'w-4 h-4 text-green-600')}${TYPES[t.type].t}</span></td><td class="whitespace-nowrap">${t.plot} - ${t.crop}</td><td class="whitespace-nowrap">${t.by}</td><td>${UI.badge(st.t, st.tone, true)}</td><td class="whitespace-nowrap">${action}<button class="btn btn-sm !border-0" data-menu="${idx}" aria-label="เพิ่มเติม">${ic('ellipsis-vertical')}</button></td></tr>`;
+}
+function renderTasks() {
+  const q = $('#tq').value.trim(), pl = $('#tPlot').value;
+  const rows = TASKS.filter(t => (tabKey === 'all' || t.st === tabKey || (tabKey === 'soon' && t.st === 'soon')) && (!pl || t.plot === pl) && (!q || (taskTitle(t) + t.plot + t.crop + t.by).includes(q)))
+    .sort((a, b) => a.d.localeCompare(b.d));
+  $('#taskBody').innerHTML = rows.length ? rows.map(taskRow).join('') : `<tr><td colspan="7" class="text-center muted py-6">ไม่มีงานในหมวดนี้</td></tr>`;
+  // today
+  $('#todayList').innerHTML = TASKS.filter(t => t.d === TODAY).map((t, i) => `<div class="flex gap-3 items-center rounded-xl border bline p-2.5">
+    ${scene('orchard', 'w-[78px] h-[62px] shrink-0', i + 3)}
+    <div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-2"><b>${taskTitle(t)}</b>${UI.badge(STATUS[t.st].t, 'green')}</div>
+      <div class="text-[12px] muted flex items-center gap-1 mt-0.5">${ic('map-pin', 'w-3.5 h-3.5')}แปลง ${t.plot} - ${t.crop}</div>
+      <div class="text-[12px] muted flex items-center gap-1">${ic('clock', 'w-3.5 h-3.5')}${t.time.replace('-', ' - ')} น.</div></div>
+    <div class="flex flex-col items-end gap-2"><div class="flex -space-x-2">${UI.avatar('สมชาย', 0)}${UI.avatar('สมใจ', 1)}${UI.avatar('วิชัย', 2)}</div><button class="btn btn-green btn-sm" data-start="${TASKS.indexOf(t)}">เริ่มงาน</button></div></div>`).join('');
+  // upcoming
+  $('#upList').innerHTML = TASKS.filter(t => ['soon', 'planned'].includes(t.st) && daysFromToday(t.d) > 0).sort((a, b) => a.d.localeCompare(b.d)).filter(t => ['spray', 'fert', 'harvest'].includes(t.type)).slice(0, 3).map(t => {
+    const n = daysFromToday(t.d);
+    return `<div class="flex items-center gap-3 py-2.5"><span class="ib ib-sm t-${t.type === 'spray' ? 'green' : 'orange'}">${ic(TYPES[t.type].icon)}</span><div class="flex-1 min-w-0"><b class="text-[13.5px]">${taskTitle(t)}</b><div class="text-[12px] muted">แปลง ${t.plot} - ${t.crop}</div></div><div class="text-right text-[12px]"><div>${thDate(t.d)}</div><div class="muted">อีก ${n} วัน</div></div>${UI.badge(t.st === 'planned' ? 'ตามแผน' : 'ใกล้ถึงกำหนด', t.st === 'planned' ? 'blue' : 'orange')}</div>`;
+  }).join('');
+  UI.icons();
+}
+$('#teamList').innerHTML = TEAM.map((m, i) => `<div class="flex items-center gap-3 py-2.5">${UI.avatar(m.n, i)}<div class="flex-1"><b class="text-[13.5px]">${m.n}</b><div class="text-[12px] muted">${m.r}</div></div><div class="text-[11.5px] text-right"><div class="muted">งานวันนี้ <b class="text-[var(--text)]">${m.today} งาน</b></div><div class="muted">เสร็จสิ้น <b class="text-green-600">${m.done} งาน</b></div></div></div>`).join('');
+$('#aiList').innerHTML = AI.map((a, i) => `<div class="flex items-start gap-3 py-2.5"><span class="ib ib-sm t-${a.tone}">${ic(a.icon)}</span><div class="flex-1 min-w-0"><b class="text-[13px]">${a.t}</b><div class="text-[12px] muted">${a.d}</div></div>${a.href ? `<a href="${a.href}" class="btn btn-sm btn-soft-green">${a.btn}</a>` : `<button class="btn btn-sm btn-soft-green" data-ai="${i}">${a.btn}</button>`}</div>`).join('');
+
+/* ---------- Events ---------- */
+const go = (dy, dm) => { viewM += dm; if (viewM < 0) { viewM = 11; viewY--; } if (viewM > 11) { viewM = 0; viewY++; } renderCal(); };
+$('#mPrev').onclick = $('#cPrev').onclick = () => go(0, -1);
+$('#mNext').onclick = $('#cNext').onclick = () => go(0, 1);
+$('#mToday').onclick = $('#cToday').onclick = () => { viewY = 2025; viewM = 3; renderCal(); };
+UI.tabs('#taskTabs', k => { tabKey = k; renderTasks(); });
+$$('[data-tabjump]').forEach(b => b.onclick = () => { const t = $(`#taskTabs [data-tab="${b.dataset.tabjump}"]`); t.click(); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+$('#tq').oninput = renderTasks; $('#tPlot').onchange = renderTasks;
+function showTask(i) {
+  const t = TASKS[i];
+  UI.modal({ title: `${taskTitle(t)} — แปลง ${t.plot}`, saveText: t.st === 'done' ? '' : 'บันทึกผลการปฏิบัติงาน', size: 'max-w-[560px]',
+    body: `<div class="grid grid-cols-2 gap-3 text-[13.5px]"><div><div class="muted">วันที่</div><b>${thFull(t.d)}</b></div><div><div class="muted">เวลา</div><b>${t.time} น.</b></div><div><div class="muted">แปลง/พืช</div><b>${t.plot} - ${t.crop}</b></div><div><div class="muted">ผู้รับผิดชอบ</div><b>${t.by}</b></div><div><div class="muted">สถานะ</div>${UI.badge(STATUS[t.st].t, STATUS[t.st].tone, true)}</div></div>
+    ${t.st !== 'done' ? `<div class="mt-4"><label class="lb">หลักฐาน/รูปภาพ (task_evidence)</label><input type="file" accept="image/*" class="inp" name="evidence"></div><div class="mt-3"><label class="lb">บันทึกผล</label><textarea class="inp" rows="3" name="note"></textarea></div>` : '<p class="mt-4 muted">งานนี้ปิดแล้ว — การแก้ไขต้องทำผ่าน correction + audit log</p>'}`,
+    onSave: () => { t.st = 'done'; renderCal(); renderTasks(); UI.toast('บันทึกผลงานแล้ว (POST /api/v1/tasks/{id}/complete)'); } });
+}
+document.addEventListener('click', e => {
+  const s = e.target.closest('[data-start]'); if (s) { const t = TASKS[+s.dataset.start]; UI.toast(`เริ่มงาน "${taskTitle(t)}" แปลง ${t.plot} — บันทึกเวลาเริ่มแล้ว`); return; }
+  const v = e.target.closest('[data-view],[data-ev]'); if (v) { showTask(+(v.dataset.view ?? v.dataset.ev)); return; }
+  const m = e.target.closest('[data-menu]'); if (m) { e.stopPropagation(); const i = +m.dataset.menu; UI.menu(m, [
+    { t: 'ดูรายละเอียด', icon: 'eye', onClick: () => showTask(i) },
+    { t: 'เลื่อนงาน', icon: 'clock-arrow-up', onClick: () => { TASKS[i].st = 'postponed'; renderCal(); renderTasks(); UI.toast('เลื่อนงานแล้ว — ระบบจะ re-evaluate ตามสภาพอากาศ'); } },
+    { t: 'ทำเครื่องหมายเสร็จสิ้น', icon: 'circle-check', onClick: () => showTask(i) }]); return; }
+  const a = e.target.closest('[data-ai]'); if (a) { const x = AI[+a.dataset.ai]; TASKS.push({ ...x.add, title: x.t.replace('ควร', ''), draft: true }); renderCal(); renderTasks(); a.disabled = true; a.textContent = 'เพิ่มแล้ว (ร่าง)'; UI.toast('เพิ่มงานฉบับร่างในปฏิทินแล้ว — รอผู้จัดการยืนยัน'); return; }
+  const c = e.target.closest('.cal-cell'); if (c && !e.target.closest('.ev')) FORMS.task(c.dataset.date);
+});
+$('#btnFilter').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, Object.entries(TYPES).map(([k, v]) => ({ t: `แสดงเฉพาะ ${v.t}`, icon: v.icon, onClick: () => { $('#tq').value = v.t; renderTasks(); } })).concat([{ t: 'ล้างตัวกรอง', icon: 'x', onClick: () => { $('#tq').value = ''; $('#tPlot').value = ''; renderTasks(); } }])); };
+$('#viewSel').onchange = e => { if (e.target.value === 'รายการ') $('#taskBody').scrollIntoView({ behavior: 'smooth' }); else if (e.target.value === 'สัปดาห์') UI.toast('มุมมองสัปดาห์: ใช้ข้อมูลชุดเดียวกัน (พัฒนาต่อใน Phase 2)'); };
+$('#btnExport').onclick = () => {
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = '﻿' + [['วันที่', 'เวลา', 'งาน', 'แปลง', 'พืช', 'ผู้รับผิดชอบ', 'สถานะ'], ...TASKS.map(t => [thDate(t.d), t.time, taskTitle(t), t.plot, t.crop, t.by, STATUS[t.st].t])].map(r => r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'calendar_tasks_2568-04.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
+window.FORMS = {
+  task: (date = TODAY) => UI.formModal('เพิ่มงาน', [
+    { n: 'type', l: 'ประเภทงาน', t: 'select', o: Object.values(TYPES).map(x => x.t), req: true }, { n: 'date', l: 'วันที่', t: 'date', v: date, req: true },
+    { n: 'start', l: 'เวลาเริ่ม', t: 'time', v: '08:00' }, { n: 'end', l: 'เวลาสิ้นสุด', t: 'time', v: '10:00' },
+    { n: 'plot', l: 'แปลง', t: 'select', o: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] }, { n: 'by', l: 'ผู้รับผิดชอบ', t: 'select', o: TEAM.map(m => m.n).concat(['ทีมงานสวน', 'ทีมพ่นยา 1']) },
+    { n: 'note', l: 'รายละเอียด', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/tasks', onSave: d => {
+    const type = Object.keys(TYPES).find(k => TYPES[k].t === d.type) || 'inspect';
+    TASKS.push({ d: d.date, type, plot: d.plot, crop: { A1: 'ทุเรียน', A2: 'ทุเรียน', B1: 'มังคุด', B2: 'ทุเรียน', C1: 'เงาะ', C2: 'ลำไย' }[d.plot], time: `${d.start}-${d.end}`, by: d.by, st: d.date === TODAY ? 'today' : d.date < TODAY ? 'overdue' : 'planned' });
+    renderCal(); renderTasks();
+  } })
+};
+renderCal(); renderTasks();
+</script>
+</body>
+</html>

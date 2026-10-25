@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แผนใส่ปุ๋ยและคำแนะนำ | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="fertilizer" data-loc="จังหวัดจันทบุรี" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <nav class="text-[13px] muted flex items-center gap-1.5"><a href="dashboard.html" aria-label="หน้าแรก"><i data-lucide="house" class="w-4 h-4"></i></a><a href="dashboard.html" class="hover:underline">หน้าแรก</a><span>/</span><span>ใส่ปุ๋ย</span></nav>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">แผนใส่ปุ๋ยและคำแนะนำ</h1>
+        <p class="muted mt-1 text-[15px]">วางแผนการใส่ปุ๋ยตามระยะการเจริญเติบโต วิเคราะห์จากข้อมูลดิน สภาพแปลง และ AI เพื่อผลผลิตคุณภาพสูง</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-green" data-form="plan"><i data-lucide="plus"></i>สร้างแผนใส่ปุ๋ย</button>
+        <div class="relative"><i data-lucide="calendar-days" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 muted"></i><select class="sel w-auto !pl-9" id="season"><option>ฤดูกาล 2568</option><option>ฤดูกาล 2567</option></select></div>
+        <select class="sel w-auto" id="farmSel"><option>ทุกสวน</option><option>สวนบ้านป่าเหมือด</option><option>สวนแม่สา</option><option>สวนดอยสะเก็ด</option></select>
+        <button class="btn btn-icon" id="btnMore" aria-label="เพิ่มเติม"><i data-lucide="ellipsis"></i></button>
+      </div>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-6">
+        <div class="card-h"><h2 class="card-t">สูตรปุ๋ยที่ใช้บ่อย</h2><a href="#stock" class="btn btn-sm btn-icon !w-8 !h-8 !border-0" aria-label="ดูสต็อก"><i data-lucide="chevron-right"></i></a></div>
+        <div id="formulas" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3"></div>
+      </div>
+      <div class="card card-pad col-span-12 2xl:col-span-6">
+        <h2 class="card-t mb-3">สัดส่วนธาตุอาหาร (N-P-K) ตามระยะการเจริญเติบโต</h2>
+        <div id="npkFlow" class="flex items-start justify-between gap-1 overflow-x-auto"></div>
+        <p class="mt-3"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>ตัวเลขคือ "สูตรปุ๋ยตัวอย่าง" ไม่ใช่อัตราส่วนธาตุอาหาร — อ้างอิงคำแนะนำการใช้ปุ๋ยสำหรับไม้ผล กรมวิชาการเกษตร (2566) หลังผ่านการตรวจโดยนักวิชาการ</span></p>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-8" id="planCard">
+        <div class="card-h flex-wrap"><h2 class="card-t">ตารางแผนใส่ปุ๋ย (ฤดูกาล 2568)</h2>
+          <div class="flex flex-wrap gap-2"><select class="sel sel-sm" id="fPlot"><option value="">ทุกแปลง</option></select><select class="sel sel-sm" id="fStage"><option value="">ทุกระยะการเติบโต</option><option>บำรุงต้น</option><option>สร้างตาดอก</option><option>บำรุงผล</option><option>ก่อนเก็บเกี่ยว</option></select><select class="sel sel-sm" id="fSt"><option value="">ทุกสถานะ</option><option>ใส่แล้ว</option><option>กำลังดำเนินการ</option><option>รอใส่ปุ๋ย</option></select></div></div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>วันที่กำหนด</th><th>แปลง</th><th>ระยะการเติบโต</th><th>สูตรปุ๋ย / รายการ</th><th class="num">ปริมาณ (กก./ไร่)</th><th class="num">พื้นที่ (ไร่)</th><th class="num">รวม (กก.)</th><th>สถานะ</th><th>การดำเนินการ</th></tr></thead><tbody id="planBody"></tbody>
+          <tfoot><tr><td colspan="6" class="text-right font-semibold !py-2">รวมทั้งหมด</td><td class="num font-bold" id="planTotal"></td><td colspan="2"></td></tr></tfoot></table></div>
+      </div>
+      <div class="card card-pad col-span-12 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="ib ib-xs t-green"><i data-lucide="sprout"></i></span>คำแนะนำรายแปลง</h2><button class="lnk" id="recAll">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div id="recList" class="space-y-3"></div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="ib ib-xs t-green"><i data-lucide="flask-conical"></i></span>ผลวิเคราะห์ดินล่าสุด <span class="text-[12px] font-normal muted">เก็บตัวอย่าง 10 เม.ย. 2568</span></h2><button class="lnk" data-form="soil">ดูรายละเอียด<i data-lucide="chevron-right"></i></button></div>
+        <div id="soil" class="grid grid-cols-3 gap-2"></div>
+        <div class="grid grid-cols-3 gap-2 mt-2" id="soil2"></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-3" id="stock">
+        <div class="card-h"><h2 class="card-t"><span class="ib ib-xs t-green"><i data-lucide="warehouse"></i></span>สต็อกปุ๋ยและวัสดุการเกษตร</h2><button class="lnk" data-toast="ไปที่คลังวัสดุ (inventory-cost) — Phase ถัดไป">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>รายการ</th><th class="num">คงเหลือ</th><th>หน่วย</th><th>สถานะ</th></tr></thead><tbody id="stockBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-5 2xl:col-span-2">
+        <h2 class="card-t mb-3"><span class="ib ib-xs t-green"><i data-lucide="clipboard-check"></i></span>สถานะการอนุมัติแผนใส่ปุ๋ย</h2>
+        <ol id="approve" class="space-y-0"></ol>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-7 2xl:col-span-3">
+        <div class="card-h"><h2 class="card-t"><i data-lucide="bot" class="w-6 h-6 text-blue-500"></i>AI ที่ปรึกษาการใส่ปุ๋ย</h2><a href="ai-advisor.html" class="lnk"><i data-lucide="sparkles"></i>AI วิเคราะห์</a></div>
+        <div class="flex gap-3">
+          <p class="text-[13px] leading-6 flex-1">จากข้อมูลดินและสภาพต้นในขณะนี้ แนะนำให้ใส่ <b class="text-green-700 dark:text-green-400">13-13-21</b> ในช่วงนี้ เพื่อกระตุ้นการสร้างตาดอก และเพิ่มอินทรียวัตถุ <b class="text-green-700 dark:text-green-400">500 กก./ไร่</b> เพื่อปรับปรุงโครงสร้างดิน</p>
+          <div class="w-[96px] h-[96px] shrink-0" id="aiImg"></div>
+        </div>
+        <div class="text-[13px] font-semibold mt-2">เหตุผล</div>
+        <ul class="text-[12.5px] space-y-1 mt-1">
+          <li class="flex gap-2"><i data-lucide="circle-check" class="w-4 h-4 text-green-600 shrink-0"></i>ค่า pH อยู่ในระดับเหมาะสม</li>
+          <li class="flex gap-2"><i data-lucide="circle-check" class="w-4 h-4 text-green-600 shrink-0"></i>ฟอสฟอรัส (P) อยู่ในระดับปานกลาง ควรเสริม</li>
+          <li class="flex gap-2"><i data-lucide="circle-check" class="w-4 h-4 text-green-600 shrink-0"></i>ต้นอยู่ในระยะเตรียมสร้างตาดอก</li>
+        </ul>
+        <div class="flex flex-wrap items-center justify-between gap-2 mt-3"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>AI Suggestion — DRAFT_REVIEW_REQUIRED</span><button class="btn btn-green btn-sm" id="aiMore">ดูคำแนะนำเพิ่มเติม</button></div>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/fertilizer-plans?season=2568 ===== */
+const KPIS = [
+  { icon: 'sprout', tone: 'green', label: 'แปลงทั้งหมด', value: '5', unit: 'แปลง', foot: '↑ +0 จากเดือนก่อน', footTone: 'green-600' },
+  { icon: 'package', tone: 'green', label: 'แผนใส่ปุ๋ยทั้งหมด', value: '24', unit: 'ครั้ง', foot: '↑ +3 ครั้ง (14%)', footTone: 'green-600' },
+  { icon: 'calendar-check', tone: 'orange', label: 'ใส่ปุ๋ยแล้ว', value: '18', unit: 'ครั้ง', foot: 'คิดเป็น 75%', footIcon: 'circle-check', footTone: 'green-600' },
+  { icon: 'clock', tone: 'orange', label: 'รอใส่ปุ๋ย', value: '6', unit: 'ครั้ง', foot: 'กำหนดใน 14 วัน' },
+  { icon: 'shopping-bag', tone: 'orange', label: 'ปริมาณปุ๋ยรวม (ปี 2568)', value: '2,850', unit: 'กก.', foot: '↑ +12% จากปีก่อน', footTone: 'green-600' },
+  { icon: 'sprout', tone: 'green', label: 'ต้นไม้ที่ได้รับปุ๋ย', value: '1,842', unit: 'ต้น', foot: 'คิดเป็น 96%', footIcon: 'circle-check', footTone: 'green-600' }
+];
+const FORMULAS = [
+  { name: 'สูตร 15-15-15', npk: [15, 15, 15], d: 'บำรุงต้น เร่งการเจริญเติบโต', bag: '#d94a3c', brand: 'ม้าบิน' },
+  { name: 'สูตร 13-13-21', npk: [13, 13, 21], d: 'สร้างตาดอก เพิ่มคุณภาพผล', bag: '#2f6fd1', brand: 'ม้าบิน' },
+  { name: 'สูตร 0-0-60', npk: [0, 0, 60], d: 'บำรุงผล เพิ่มความหวาน', bag: '#d94a3c', brand: 'K-60' },
+  { name: 'ปุ๋ยคอก', d: 'อินทรียวัตถุสูง ปรับปรุงโครงสร้างดิน', icon: 'cow' },
+  { name: 'อินทรีย์วัตถุ', d: 'เพิ่มจุลินทรีย์ดิน ปรับสภาพดินระยะยาว', icon: 'compost' }
+];
+const NPK_STAGES = [
+  { t: 'บำรุงต้น', m: '(มี.ค. - พ.ค.)', v: [15, 15, 15], icon: 'sprout' }, { t: 'สร้างตาดอก', m: '(มิ.ย. - ส.ค.)', v: [13, 13, 21], icon: 'flower-2' },
+  { t: 'บำรุงผล', m: '(ก.ย. - พ.ย.)', v: [0, 0, 60], icon: 'durian' }, { t: 'ก่อนเก็บเกี่ยว', m: '(ธ.ค. - ก.พ.)', v: [8, 24, 24], icon: 'durian2' }
+];
+const PLANS = [
+  { d: '2025-04-15', plot: 'A1 - ทุเรียน', stage: 'บำรุงต้น', f: '15-15-15', rate: 20, rai: 12.0, st: 'ใส่แล้ว' },
+  { d: '2025-04-22', plot: 'A2 - ทุเรียน', stage: 'สร้างตาดอก', f: '13-13-21', rate: 25, rai: 9.5, st: 'กำลังดำเนินการ' },
+  { d: '2025-04-28', plot: 'B1 - ทุเรียน', stage: 'บำรุงต้น', f: 'ปุ๋ยคอก', rate: 1000, rai: 8.0, st: 'รอใส่ปุ๋ย' },
+  { d: '2025-05-05', plot: 'C1 - ทุเรียน', stage: 'สร้างตาดอก', f: 'อินทรีย์วัตถุ', rate: 500, rai: 6.5, st: 'รอใส่ปุ๋ย' },
+  { d: '2025-05-18', plot: 'A1 - ทุเรียน', stage: 'บำรุงผล', f: '0-0-60', rate: 30, rai: 12.0, st: 'รอใส่ปุ๋ย' }
+];
+const STAGE_TONE = { 'บำรุงต้น': 'green', 'สร้างตาดอก': 'red', 'บำรุงผล': 'green', 'ก่อนเก็บเกี่ยว': 'orange' };
+const ST = { 'ใส่แล้ว': ['green', 'circle-check'], 'กำลังดำเนินการ': ['orange', 'loader'], 'รอใส่ปุ๋ย': ['gray', 'circle'] };
+const RECS = [
+  { plot: 'A1 - ทุเรียน', stage: 'บำรุงต้น', tone: 'green', rec: 'แนะนำใส่ 15-15-15', rate: 'อัตรา 20 กก./ไร่', why: 'ในช่วงนี้ดินมีความชื้นเหมาะสม', info: '12.0 ไร่ | ต้น 120 ต้น' },
+  { plot: 'A2 - ทุเรียน', stage: 'สร้างตาดอก', tone: 'red', rec: 'แนะนำใส่ 13-13-21', rate: 'อัตรา 25 กก./ไร่', why: 'ช่วยกระตุ้นการออกดอก', info: '9.5 ไร่ | ต้น 95 ต้น' },
+  { plot: 'B1 - ทุเรียน', stage: 'บำรุงผล', tone: 'green', rec: 'แนะนำใส่ 0-0-60', rate: 'อัตรา 30 กก./ไร่', why: 'เพิ่มขนาดผล และความหวาน', info: '8.0 ไร่ | ต้น 80 ต้น' }
+];
+const SOIL = [
+  { icon: 'ph', l: 'ค่า pH', v: '6.1', u: '', s: 'เหมาะสม', tone: 'green' }, { icon: 'leaf', l: 'อินทรียวัตถุ', v: '2.8', u: '%', s: 'ปานกลาง', tone: 'orange' },
+  { icon: 'droplet', l: 'ไนโตรเจน (N)', v: '0.18', u: '%', s: 'ค่อนข้างต่ำ', tone: 'red' }, { icon: 'atom', l: 'ฟอสฟอรัส (P)', v: '28', u: 'mg/kg', s: 'เหมาะสม', tone: 'green' },
+  { icon: 'droplets', l: 'โพแทสเซียม (K)', v: '112', u: 'mg/kg', s: 'เหมาะสม', tone: 'green' }
+];
+const SOIL2 = [
+  { icon: 'droplet', l: 'ความชื้นดิน', v: '32', u: '%', s: 'เหมาะสม', tone: 'green' }, { icon: 'activity', l: 'ค่าการนำไฟฟ้า (EC)', v: '0.6', u: 'mS/cm', s: 'ปกติ', tone: 'blue' },
+  { icon: 'mountain', l: 'เนื้อดิน', v: 'ร่วน', u: '', s: '', tone: 'brown' }
+];
+const STOCK = [
+  { n: 'สูตร 15-15-15', q: 650, u: 'กก.', min: 200, icon: 'package' }, { n: 'สูตร 13-13-21', q: 420, u: 'กก.', min: 200, icon: 'package' },
+  { n: 'สูตร 0-0-60', q: 300, u: 'กก.', min: 150, icon: 'package' }, { n: 'ปุ๋ยคอก', q: 12000, u: 'กก.', min: 3000, icon: 'tractor' },
+  { n: 'อินทรีย์วัตถุ', q: 2850, u: 'กก.', min: 1000, icon: 'leaf' }, { n: 'ปูนขาว', q: 180, u: 'กก.', min: 300, icon: 'box' }
+];
+const APPROVE = [
+  { n: 1, t: 'จัดทำแผน', by: 'โดย สมชาย ใจดี', at: '20 เม.ย. 2568 10:30', st: 'done' },
+  { n: 2, t: 'ตรวจสอบ', by: 'โดย นักวิชาการเกษตร', at: '21 เม.ย. 2568 14:20', st: 'done' },
+  { n: 3, t: 'อนุมัติ', by: 'โดย ผู้จัดการสวน', at: '22 เม.ย. 2568 09:15', st: 'now' },
+  { n: 4, t: 'ดำเนินการ', by: 'รอดำเนินการใส่ปุ๋ย', at: '', st: 'next' }
+];
+
+/* ===== Helpers ===== */
+const bagSvg = (f) => `<svg viewBox="0 0 80 96" class="w-[66px] h-[80px]"><path d="M10 10 Q40 2 70 10 L74 88 Q40 96 6 88Z" fill="#f4f6f8" stroke="#cfd6db"/><rect x="12" y="22" width="56" height="20" rx="3" fill="${f.bag}"/><text x="40" y="36" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">${f.brand}</text><text x="40" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#1b2a20">${f.npk.join('-')}</text><path d="M14 72h52" stroke="${f.bag}" stroke-width="5"/><circle cx="40" cy="82" r="4" fill="#43a047"/></svg>`;
+const organicSvg = (k) => k === 'cow'
+  ? `<svg viewBox="0 0 96 80" class="w-[84px] h-[80px]"><ellipse cx="48" cy="68" rx="40" ry="8" fill="#5d4037"/><path d="M14 64c4-12 14-16 34-16s30 4 34 16z" fill="#6d4c41"/><g transform="translate(18,6)"><rect x="6" y="14" width="40" height="20" rx="8" fill="#fff" stroke="#333"/><circle cx="16" cy="22" r="4" fill="#222"/><circle cx="34" cy="28" r="3" fill="#222"/><rect x="44" y="12" width="14" height="12" rx="4" fill="#fff" stroke="#333"/><path d="M10 34v8M40 34v8" stroke="#333" stroke-width="3"/></g></svg>`
+  : `<svg viewBox="0 0 96 80" class="w-[84px] h-[80px]"><path d="M8 72c6-26 22-38 40-38s34 12 40 38z" fill="#6d4c41"/><path d="M22 72c4-16 14-24 26-24s22 8 26 24z" fill="#4e342e"/>${Array.from({ length: 10 }, (_, i) => `<circle cx="${18 + i * 7}" cy="${58 + (i % 3) * 4}" r="2" fill="#a1887f"/>`).join('')}</svg>`;
+const npkDots = (v, s = 'w-8 h-8 text-[13px]') => `<div class="flex gap-1.5 justify-center">${['N', 'P', 'K'].map((k, i) => `<span class="${s} rounded-full grid place-items-center font-bold ${['t-green', 't-red', 't-blue'][i]}">${v[i]}</span>`).join('')}</div>`;
+
+/* ===== Render ===== */
+UI.mountKpis('#kpis', KPIS);
+$('#formulas').innerHTML = FORMULAS.map((f, i) => `<div class="rounded-xl border bline p-3 flex flex-col">
+  <div class="flex items-center justify-between gap-1"><b class="text-[13.5px]">${f.name}</b></div>
+  <div class="flex items-center gap-2 mt-2 min-h-[84px]">${f.npk ? bagSvg(f) + `<div class="space-y-1">${['N', 'P', 'K'].map((k, j) => `<div class="flex flex-col items-center"><span class="text-[10px] font-bold ${['text-green-700', 'text-blue-700', 'text-red-600'][j]}">${k}</span><span class="w-6 h-6 rounded-full grid place-items-center text-[11px] font-bold ${['t-green', 't-blue', 't-red'][j]}">${f.npk[j]}</span></div>`).join('')}</div>` : organicSvg(f.icon)}</div>
+  <p class="text-[12px] muted mt-1 flex-1">${f.d}</p>
+  <button class="btn btn-soft-green btn-sm mt-2 w-full" data-pick="${i}">เลือกใช้</button></div>`).join('');
+$('#npkFlow').innerHTML = NPK_STAGES.map((s, i) => `<div class="flex items-start ${i < 3 ? 'flex-1' : ''}"><div class="flex flex-col items-center text-center min-w-[110px]">
+  <div class="w-[78px] h-[78px] rounded-full grid place-items-center ${['bg-[#e6f5e8]', 'bg-[#fdf2e1]', 'bg-[#eef6e2]', 'bg-[#fbeedd]'][i]}">${s.icon === 'durian' ? fruitSvg('durian', 54) : s.icon === 'durian2' ? fruitSvg('durian', 58) : ic(s.icon, 'w-10 h-10 ' + (i ? 'text-amber-500' : 'text-green-600'))}</div>
+  <b class="mt-2 text-[14px]">${s.t}</b><span class="text-[12px] muted">${s.m}</span><div class="mt-2">${npkDots(s.v)}</div></div>
+  ${i < 3 ? `<div class="flex-1 grid place-items-center pt-8 muted">${ic('arrow-right', 'w-5 h-5')}</div>` : ''}</div>`).join('');
+
+$('#fPlot').innerHTML += [...new Set(PLANS.map(p => p.plot))].map(p => `<option>${p}</option>`).join('');
+function renderPlans() {
+  const pl = $('#fPlot').value, sg = $('#fStage').value, st = $('#fSt').value;
+  const rows = PLANS.filter(p => (!pl || p.plot === pl) && (!sg || p.stage === sg) && (!st || p.st === st));
+  $('#planBody').innerHTML = rows.map(p => { const i = PLANS.indexOf(p), total = Math.round(p.rate * p.rai);
+    return `<tr><td class="whitespace-nowrap">${thDate(p.d)}</td><td class="whitespace-nowrap">${p.plot}</td><td>${UI.badge(p.stage, STAGE_TONE[p.stage])}</td><td class="font-medium">${p.f}</td><td class="num">${nf(p.rate)}</td><td class="num">${p.rai.toFixed(1)}</td><td class="num font-semibold">${nf(total)}</td>
+    <td><span class="bdg t-${ST[p.st][0]}">${ic(ST[p.st][1], 'w-3.5 h-3.5')}${p.st}</span></td>
+    <td>${p.st === 'กำลังดำเนินการ' ? `<button class="btn btn-sm btn-soft-green" data-log="${i}">บันทึกใส่ปุ๋ย</button>` : `<button class="lnk" data-view="${i}">ดูรายละเอียด</button>`}</td></tr>`; }).join('') || `<tr><td colspan="9" class="text-center muted py-8">ไม่พบรายการ</td></tr>`;
+  $('#planTotal').textContent = nf(rows.reduce((s, p) => s + Math.round(p.rate * p.rai), 0)) + ' กก.';
+  UI.icons();
+}
+['#fPlot', '#fStage', '#fSt'].forEach(s => $(s).onchange = renderPlans); renderPlans();
+
+$('#recList').innerHTML = RECS.map((r, i) => `<button class="w-full text-left flex gap-3 items-center rounded-xl border bline p-2.5 hover:shadow-sm" data-rec="${i}">
+  <div class="w-[78px] h-[62px] shrink-0">${scene('durian', 'h-full')}</div>
+  <div class="flex-1 min-w-0"><div class="flex items-center gap-2 flex-wrap"><b>${r.plot}</b>${UI.badge(r.stage, r.tone)}</div><div class="text-[12px] muted">${r.info}</div></div>
+  <div class="text-[12px] text-right"><div class="font-medium">${r.rec}</div><div>${r.rate}</div><div class="muted">${r.why}</div></div>${ic('chevron-right', 'w-4 h-4 muted')}</button>`).join('');
+const soilCell = s => `<div class="rounded-xl border bline p-2.5"><div class="flex items-start gap-1.5"><span class="ib ib-xs shrink-0 t-${s.tone}">${s.icon === 'ph' ? '<b class="text-[11px]">pH</b>' : ic(s.icon)}</span><span class="text-[11.5px] muted leading-tight">${s.l}</span></div><div class="mt-1"><b class="text-[20px]">${s.v}</b> <span class="text-[11.5px] muted">${s.u}</span></div>${s.s ? `<div class="text-[11.5px] text-${{ green: 'green-600', orange: 'orange-600', red: 'red-600', blue: 'blue-600' }[s.tone] || 'gray-500'}">${s.s}</div>` : ''}</div>`;
+$('#soil').innerHTML = SOIL.map(soilCell).join('');
+$('#soil2').innerHTML = SOIL2.map(soilCell).join('') + `<div class="col-span-3 rounded-xl t-yellow p-2.5 flex gap-2"><span>${ic('lightbulb', 'w-5 h-5')}</span><div class="text-[12px] text-[var(--text)]"><b>คำแนะนำ</b><br>เพิ่มอินทรียวัตถุ และเสริมไนโตรเจน เพื่อปรับปรุงความอุดมสมบูรณ์ของดิน</div></div>`;
+$('#stockBody').innerHTML = STOCK.map(s => `<tr><td class="whitespace-nowrap"><span class="inline-flex items-center gap-1.5">${ic(s.icon, 'w-4 h-4 text-red-500')}${s.n}</span></td><td class="num">${nf(s.q)}</td><td>${s.u}</td><td>${s.q >= s.min ? UI.badge('เพียงพอ', 'green') : `<span class="bdg t-red">${ic('triangle-alert', 'w-3.5 h-3.5')}ต่ำกว่ากำหนด</span>`}</td></tr>`).join('');
+$('#approve').innerHTML = APPROVE.map((a, i) => `<li class="flex gap-3 ${i < 3 ? 'pb-4' : ''} relative">${i < 3 ? `<span class="absolute left-[15px] top-8 bottom-0 w-0.5 ${a.st === 'done' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}"></span>` : ''}
+  <span class="w-8 h-8 rounded-full grid place-items-center font-bold text-[13px] shrink-0 ${a.st === 'done' ? 'bg-[#2e8b47] text-white' : a.st === 'now' ? 'bg-[#e53935] text-white ring-4 ring-red-100 dark:ring-red-500/20' : 'bg-gray-200 dark:bg-gray-700 muted'}">${a.n}</span>
+  <div class="text-[12.5px]"><b class="text-[13.5px]">${a.t}</b><div class="muted">${a.by}</div>${a.at ? `<div class="muted">${a.at}</div>` : ''}</div></li>`).join('');
+
+/* ===== Events ===== */
+document.addEventListener('click', e => {
+  const pk = e.target.closest('[data-pick]'); if (pk) { FORMS.plan({ f: FORMULAS[+pk.dataset.pick].name.replace('สูตร ', '') }); return; }
+  const lg = e.target.closest('[data-log]'); if (lg) { FORMS.log(PLANS[+lg.dataset.log]); return; }
+  const vw = e.target.closest('[data-view]'); if (vw) { showPlan(PLANS[+vw.dataset.view]); return; }
+  const rc = e.target.closest('[data-rec]'); if (rc) { const r = RECS[+rc.dataset.rec]; FORMS.plan({ plot: r.plot, stage: r.stage, f: r.rec.replace('แนะนำใส่ ', ''), rate: parseInt(r.rate.replace(/\D/g, ''), 10) }); }
+});
+function showPlan(p) {
+  UI.modal({ title: `แผนใส่ปุ๋ย ${p.plot} — ${p.f}`, saveText: '', body: `<div class="grid grid-cols-2 gap-3 text-[13.5px]">
+    <div><div class="muted">วันที่กำหนด</div><b>${thDate(p.d)}</b></div><div><div class="muted">ระยะการเติบโต</div>${UI.badge(p.stage, STAGE_TONE[p.stage])}</div>
+    <div><div class="muted">อัตรา</div><b>${nf(p.rate)} กก./ไร่ × ${p.rai} ไร่ = ${nf(Math.round(p.rate * p.rai))} กก.</b></div><div><div class="muted">สถานะ</div><b>${p.st}</b></div></div>
+    <div class="mt-4 rounded-xl border bline p-3 text-[12.5px]"><b>ที่มาของกฎ (source_rules)</b><ul class="list-disc pl-5 mt-1 muted"><li>คำแนะนำการใช้ปุ๋ยสำหรับไม้ผล กรมวิชาการเกษตร (ก.ย. 2566) — บทที่ว่าด้วยทุเรียน</li><li>ผลวิเคราะห์ดิน 10 เม.ย. 2568 (lab: ห้องปฏิบัติการตัวอย่าง)</li><li>สถานะกฎ: <span class="text-green-600 font-medium">Agronomist Verified</span> · ผู้อนุมัติ: นักวิชาการเกษตร</li></ul></div>` });
+}
+$('#recAll').onclick = () => UI.toast('แสดงคำแนะนำครบ 5 แปลง (GET /api/v1/fertilizer-plans/preview)');
+$('#aiMore').onclick = () => UI.modal({ title: 'ผลลัพธ์ AI (Output contract)', saveText: '', body: `<pre class="text-[12px] bg-card2 rounded-xl p-3 overflow-auto border bline">${esc(JSON.stringify({ status: 'DRAFT_REVIEW_REQUIRED', crop: 'durian', growth_stage: 'flower_induction', soil_test_id: 'ST-2568-0410-A2', recommended_products: [{ grade: '13-13-21', rate_kg_per_rai: 25 }, { product: 'organic_matter', rate_kg_per_rai: 500 }], nutrient_targets: { N_g: null, P2O5_g: null, K2O_g: null }, reason_codes: ['PH_OK', 'P_MEDIUM', 'STAGE_FLOWER_INDUCTION'], risk_flags: [], source_rules: ['DOA-FERT-FRUIT-2566/durian'], confidence: 'medium', requires_agronomist_approval: true }, null, 2))}</pre><p class="text-[12.5px] muted mt-2">ระบบจะไม่สร้างใบงานจนกว่านักวิชาการเกษตรจะอนุมัติ</p>` });
+$('#btnMore').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, [{ t: 'บันทึกผลตรวจดิน/ใบ', icon: 'flask-conical', onClick: () => FORMS.soil() }, { t: 'จัดการกฎปุ๋ย (Knowledge base)', icon: 'book-open', href: 'settings.html' }, { t: 'ส่งออกแผน (CSV)', icon: 'download', onClick: exportCSV }, { t: 'พิมพ์', icon: 'printer', onClick: () => window.print() }]); };
+function exportCSV() {
+  const rows = [['วันที่กำหนด', 'แปลง', 'ระยะ', 'สูตร', 'กก./ไร่', 'ไร่', 'รวม(กก.)', 'สถานะ'], ...PLANS.map(p => [thDate(p.d), p.plot, p.stage, p.f, p.rate, p.rai, Math.round(p.rate * p.rai), p.st])];
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); a.download = 'fertilizer_plan_2568.csv'; a.click();
+}
+window.FORMS = {
+  plan: (pre = {}) => UI.formModal('สร้างแผนใส่ปุ๋ย (ฉบับร่าง)', [
+    { n: 'plot', l: 'แปลง', t: 'select', o: ['A1 - ทุเรียน', 'A2 - ทุเรียน', 'B1 - ทุเรียน', 'C1 - ทุเรียน', 'C2 - ลำไย'], v: pre.plot, req: true },
+    { n: 'stage', l: 'ระยะการเติบโต', t: 'select', o: ['บำรุงต้น', 'สร้างตาดอก', 'บำรุงผล', 'ก่อนเก็บเกี่ยว'], v: pre.stage, req: true },
+    { n: 'formula', l: 'สูตรปุ๋ย / รายการ', t: 'select', o: ['15-15-15', '13-13-21', '0-0-60', '12-12-17', 'ปุ๋ยคอก', 'อินทรีย์วัตถุ'], v: pre.f },
+    { n: 'rate', l: 'ปริมาณ (กก./ไร่)', t: 'number', v: pre.rate || '', req: true }, { n: 'date', l: 'วันที่กำหนด', t: 'date', req: true },
+    { n: 'soil', l: 'ผลตรวจดินอ้างอิง', t: 'select', o: ['ST-2568-0410 (10 เม.ย. 2568)', 'ไม่มีผลตรวจดิน → NEED_SOIL_TEST'] },
+    { n: 'note', l: 'เหตุผล / หมายเหตุ', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/fertilizer-plans/preview → submit → approve', onSave: d => {
+    if (String(d.soil).includes('NEED_SOIL_TEST')) { UI.toast('NEED_SOIL_TEST — ต้องตรวจดินก่อนคำนวณอัตรา', 'triangle-alert'); return false; }
+    PLANS.push({ d: d.date, plot: d.plot, stage: d.stage, f: d.formula, rate: +d.rate, rai: { 'A1 - ทุเรียน': 12, 'A2 - ทุเรียน': 9.5, 'B1 - ทุเรียน': 8, 'C1 - ทุเรียน': 6.5, 'C2 - ลำไย': 6.5 }[d.plot] || 1, st: 'รอใส่ปุ๋ย' });
+    PLANS.sort((a, b) => a.d.localeCompare(b.d)); renderPlans();
+  } }),
+  log: (p) => UI.formModal(`บันทึกการใส่ปุ๋ยจริง — ${p.plot} (${p.f})`, [
+    { n: 'performed_at', l: 'วัน-เวลาที่ปฏิบัติ', t: 'datetime-local', req: true }, { n: 'qty', l: 'ปริมาณจริง (กก.)', t: 'number', v: Math.round(p.rate * p.rai), req: true },
+    { n: 'lot', l: 'Lot ปุ๋ย', req: true, ph: 'LOT-131321-0425' }, { n: 'method', l: 'วิธีใส่', t: 'select', o: ['หว่านรอบทรงพุ่ม', 'ฝังกลบ', 'ผ่านระบบน้ำ (Fertigation)'] },
+    { n: 'by', l: 'ผู้ปฏิบัติ', v: 'สมชาย ใจดี' }, { n: 'evidence', l: 'หลักฐาน (รูป)', t: 'file' }
+  ], { api: 'POST /api/v1/fertilizer-applications (ตัดสต็อกแบบ atomic)', onSave: () => { p.st = 'ใส่แล้ว'; renderPlans(); } }),
+  soil: () => UI.formModal('ผลวิเคราะห์ดิน', [
+    { n: 'date', l: 'วันที่เก็บตัวอย่าง', t: 'date', v: '2025-04-10', req: true }, { n: 'lab', l: 'ห้องปฏิบัติการ', v: 'ห้องปฏิบัติการตัวอย่าง' }, { n: 'depth', l: 'ความลึก (ซม.)', v: '0-30' },
+    { n: 'ph', l: 'pH', t: 'number', v: '6.1' }, { n: 'om', l: 'อินทรียวัตถุ (%)', t: 'number', v: '2.8' }, { n: 'n', l: 'N (%)', t: 'number', v: '0.18' },
+    { n: 'p', l: 'Available P (mg/kg)', t: 'number', v: '28' }, { n: 'k', l: 'Exchangeable K (mg/kg)', t: 'number', v: '112' }, { n: 'ec', l: 'EC (mS/cm)', t: 'number', v: '0.6' },
+    { n: 'method', l: 'วิธีสกัด (extraction method)', t: 'select', o: ['Bray II', 'Olsen', 'NH4OAc'] }, { n: 'pdf', l: 'ไฟล์รายงานผล (PDF)', t: 'file', full: true }
+  ], { api: 'POST /api/v1/soil-tests' })
+};
+$('#aiImg').innerHTML = scene('durian', 'h-full');
+if (location.hash === '#create') FORMS.plan();
+UI.icons();
+</script>
+</body>
+</html>

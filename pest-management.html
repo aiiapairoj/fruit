@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จัดการโรคแมลงและการพ่นยา | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="pest" data-loc="อำเภอบางใหญ่" data-search="ค้นหาสวน แปลง ต้นไม้ หรือโรคแมลง...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <nav class="text-[13px] muted flex items-center gap-1.5"><a href="dashboard.html" aria-label="หน้าหลัก"><i data-lucide="house" class="w-4 h-4"></i></a><span>/</span><span>ใส่ยา/โรคแมลง</span></nav>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">จัดการโรคแมลงและการพ่นยา</h1>
+        <p class="muted mt-1 text-[15px]">เฝ้าระวัง ตรวจพบ วางแผนพ่นยา และติดตามผลการจัดการโรคแมลงแบบครบวงจร</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-green" data-form="scout"><i data-lucide="plus"></i>บันทึกการสำรวจ</button>
+        <button class="btn btn-orange" data-form="spray"><i data-lucide="plus"></i>สั่งพ่นยา</button>
+        <a href="calendar.html" class="btn"><i data-lucide="calendar-days"></i>ปฏิทินการพ่น</a>
+        <a href="reports.html" class="btn"><i data-lucide="file-text"></i>รายงาน</a>
+        <button class="btn btn-icon" id="btnMore" aria-label="เพิ่มเติม"><i data-lucide="ellipsis"></i></button>
+      </div>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 xl:col-span-5" id="mapCard">
+        <div class="card-h"><h2 class="card-t">แผนที่ความเสี่ยงโรคแมลงในสวน (Risk Map)</h2><button class="lnk" id="mapFull"><i data-lucide="maximize-2"></i>ดูแผนที่เต็มจอ</button></div>
+        <div class="relative h-[300px]"><div id="map" class="map"></div></div>
+        <div class="flex flex-wrap gap-4 mt-3 text-[12px]">
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#43a047]"></i>ปกติ</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#f5c518]"></i>เฝ้าระวัง</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#F58A25]"></i>เสี่ยงสูง</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#e53935]"></i>พบการระบาด</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-gray-300"></i>ไม่มีข้อมูล</span>
+        </div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-7 xl:col-span-4">
+        <div class="card-h"><h2 class="card-t">โรคและแมลงที่ตรวจพบ (ล่าสุด)</h2><button class="lnk" id="allPests">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div id="pests" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-5 xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">ภาพความผิดปกติจากการสำรวจ</h2><button class="lnk" data-toast="เปิดคลังภาพการสำรวจทั้งหมด (inspection_photos)">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div id="photos" class="grid grid-cols-2 gap-3"></div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 lg:col-span-6 xl:col-span-4">
+        <div class="card-h"><h2 class="card-t">สถิติการพบโรคแมลง (30 วัน)</h2><select class="sel sel-sm" id="statRange"><option value="6">30 วันที่ผ่านมา</option><option value="3">14 วันที่ผ่านมา</option></select></div>
+        <div class="relative flex items-center justify-center h-[240px]"><canvas id="statChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 xl:col-span-2">
+        <h2 class="card-t mb-2">พื้นที่ที่ได้รับผลกระทบ</h2>
+        <div class="relative flex items-center justify-center h-[160px]"><canvas id="areaChart" class="max-w-full"></canvas><div class="absolute inset-0 grid place-items-center pointer-events-none text-center"><div><div class="text-[12px] muted">รวม</div><div class="font-bold text-[18px]">480 ไร่</div></div></div></div>
+        <ul id="areaLegend" class="space-y-1.5 mt-3 text-[12.5px]"></ul>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">สภาพอากาศและความเสี่ยงวันนี้</h2><a href="integrations.html" class="lnk">ดูพยากรณ์ 7 วัน<i data-lucide="chevron-right"></i></a></div>
+        <div class="flex items-center gap-3"><div id="wxBig"></div><div><div class="text-[32px] font-bold leading-none">32°C</div><div class="text-[13px]">มีเมฆบางส่วน</div></div>
+          <div class="ml-auto text-[12.5px] space-y-1.5"><div class="flex items-center gap-1.5"><i data-lucide="droplet" class="w-4 h-4 text-blue-500"></i>ความชื้น <b>78%</b></div><div class="flex items-center gap-1.5"><i data-lucide="wind" class="w-4 h-4 text-sky-500"></i>ลม <b>12 กม./ชม.</b></div></div></div>
+        <div class="rounded-xl t-red !bg-red-50 dark:!bg-red-500/10 p-3 mt-4 flex gap-3">
+          <span class="text-red-600"><i data-lucide="triangle-alert" class="w-10 h-10"></i></span>
+          <div><b class="text-red-600">สภาพเหมาะสมต่อการระบาดของเพลี้ยไฟ</b><p class="text-[12.5px] muted mt-1">ความชื้นสูงและอุณหภูมิที่เหมาะสม เพิ่มความเสี่ยง แนะนำให้สำรวจแปลงอย่างใกล้ชิด</p></div>
+        </div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">คำแนะนำการจัดการ (AI)</h2><a href="ai-advisor.html" class="lnk">ดูเพิ่มเติม</a></div>
+        <div id="aiRec" class="divide-line"></div>
+        <p class="mt-2"><span class="trust"><i data-lucide="shield-alert" class="w-3 h-3"></i>ต้องตรวจทะเบียน/ฉลากผลิตภัณฑ์ก่อนอนุมัติทุกครั้ง (IPM-first)</span></p>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-6">
+        <div class="card-h flex-wrap"><h2 class="card-t">แผนการพ่นยา</h2>
+          <div class="flex flex-wrap gap-2 items-center"><div class="tabs" id="sTabs"><button class="tab on" data-tab="all">ทั้งหมด (5)</button><button class="tab t-orange" data-tab="pending">รอดำเนินการ (2)</button><button class="tab t-blue" data-tab="doing">กำลังดำเนินการ (1)</button><button class="tab t-green" data-tab="done">เสร็จสิ้น (2)</button></div>
+          <button class="lnk" data-form="spray"><i data-lucide="plus"></i>เพิ่มแผนการพ่นยา</button></div></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>วันที่กำหนด</th><th>แปลง</th><th>ปัญหา</th><th>วิธีจัดการ</th><th>ชื่อยา/สารชีวภัณฑ์</th><th>อัตราใช้</th><th class="num">พื้นที่ (ไร่)</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th><th></th></tr></thead><tbody id="sprayBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-7 2xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">บันทึกการใช้ยา/สารชีวภัณฑ์</h2><button class="lnk" data-toast="ดูบันทึกทั้งหมด (chemical_applications — แก้ไขได้ผ่าน correction + reason เท่านั้น)">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>วันที่</th><th>ชื่อผลิตภัณฑ์</th><th>ประเภท</th><th class="num">ปริมาณที่ใช้</th><th>ผู้ใช้</th></tr></thead><tbody id="useBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-5 2xl:col-span-3" id="phi">
+        <div class="card-h"><h2 class="card-t"><span class="ib ib-xs t-red"><i data-lucide="shield-alert"></i></span>เว้นระยะเก็บเกี่ยว (PHI)</h2><button class="lnk" data-toast="รายการ harvest_holds ทั้งหมด">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div id="phiList" class="space-y-3"></div>
+        <p class="text-[11.5px] muted mt-3">ระบบสร้าง harvest_block_until = วันพ่น + PHI ตามฉลาก และบล็อกการปล่อยล็อตที่ได้รับผลกระทบอัตโนมัติ</p>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/ipm-observations , /api/v1/chemical-applications ===== */
+const KPIS = [
+  { icon: 'leaf', tone: 'green', label: 'ตรวจพบโรค/แมลง', value: '4', unit: 'รายการ', foot: '+2 จากสัปดาห์ที่แล้ว', footIcon: 'triangle', footTone: 'red-600' },
+  { icon: 'triangle-alert', tone: 'red', label: 'แปลงที่มีความเสี่ยงสูง', value: '3', unit: 'แปลง', foot: '+1 จากสัปดาห์ที่แล้ว', footIcon: 'triangle', footTone: 'red-600' },
+  { icon: 'spray-can', tone: 'orange', label: 'งานพ่นยาที่รอดำเนินการ', value: '2', unit: 'รายการ', foot: 'กำหนดภายใน 3 วัน', footIcon: 'clock', footTone: 'orange-600' },
+  { icon: 'shield', tone: 'orange', label: 'อยู่ในช่วงเว้นระยะเก็บเกี่ยว', value: '1', unit: 'แปลง', foot: 'PHI คงเหลือ 7 วัน', footIcon: 'clock', footTone: 'orange-600' },
+  { icon: 'sprout', tone: 'green', label: 'ใช้สารชีวภัณฑ์', value: '5', unit: 'ครั้ง (เดือนนี้)', foot: '+67% จากเดือนที่แล้ว', footIcon: 'triangle', footTone: 'green-600' }
+];
+const RISK = { normal: '#43a047', watch: '#f5c518', high: '#F58A25', outbreak: '#e53935' };
+const PLOTS = [
+  { code: 'A1', r: 'normal', rai: 120 }, { code: 'A2', r: 'outbreak', rai: 95, alert: 'red' }, { code: 'B1', r: 'watch', rai: 80, alert: 'orange' },
+  { code: 'B2', r: 'normal', rai: 150 }, { code: 'C1', r: 'high', rai: 200, alert: 'orange' }, { code: 'C2', r: 'watch', rai: 180 }
+];
+const PESTS = [
+  { n: 'โรครากเน่าโคนเน่า', lv: 'ความเสี่ยงสูง', tone: 'red', where: 'พบใน 2 แปลง (A2, C1)', act: 'ตรวจสอบเร่งด่วน', actTone: 'red', sev: 3, sevC: '#e53935', sc: ['root'] },
+  { n: 'เพลี้ยไฟ', lv: 'เฝ้าระวัง', tone: 'orange', where: 'พบใน 3 แปลง (A2, B1, C2)', act: 'ตรวจสอบเร่งด่วน', actTone: 'red', sev: 3, sevC: '#F58A25', sc: ['bug', '#d8b56a'] },
+  { n: 'แอนแทรคโนส', lv: 'เฝ้าระวัง', tone: 'orange', where: 'พบใน 1 แปลง (B1)', act: 'เริ่มพบการระบาด', actTone: 'orange', sev: 2, sevC: '#F58A25', sc: ['leaf', 'spot'] },
+  { n: 'เพลี้ยแป้ง', lv: 'ปกติ', tone: 'green', where: 'พบเล็กน้อย (B2)', act: 'ควบคุมได้', actTone: 'green', sev: 1, sevC: '#43a047', sc: ['mealy'] }
+];
+const PHOTOS = [
+  { n: 'โรครากเน่าโคนเน่า', p: 'แปลง A2 | 22 เม.ย. 68', c: '#e53935', sc: ['root'] }, { n: 'แอนแทรคโนส', p: 'แปลง B1 | 21 เม.ย. 68', c: '#e53935', sc: ['leaf', 'spot'] },
+  { n: 'เพลี้ยไฟ', p: 'แปลง A2 | 21 เม.ย. 68', c: '#F58A25', sc: ['bug', '#d8b56a'] }, { n: 'เพลี้ยแป้ง', p: 'แปลง B2 | 20 เม.ย. 68', c: '#43a047', sc: ['mealy'] }
+];
+const STAT = { labels: ['22 มี.ค.', '29 มี.ค.', '5 เม.ย.', '12 เม.ย.', '19 เม.ย.', '22 เม.ย.'],
+  s: [{ n: 'โรครากเน่าโคนเน่า', c: '#e53935', v: [9, 11, 13, 15, 17, 19] }, { n: 'เพลี้ยไฟ', c: '#F58A25', v: [7, 9, 10, 12, 14, 15] }, { n: 'แอนแทรคโนส', c: '#2e8b47', v: [3, 5, 6, 8, 10, 12] }, { n: 'เพลี้ยแป้ง', c: '#1e88e5', v: [1, 2, 2, 3, 4, 4] }] };
+const AREA = [{ n: 'ความเสี่ยงสูง', v: 85, p: 18, c: '#e53935' }, { n: 'เฝ้าระวัง', v: 165, p: 34, c: '#F58A25' }, { n: 'ปกติ', v: 230, p: 48, c: '#43a047' }];
+const AIREC = [
+  { icon: 'bug', tone: 'orange', t: 'เพลี้ยไฟ', d: 'แนะนำพ่น สไปนีโทแรม 12% SC ร่วมกับสารชีวภัณฑ์ ในเวลาเย็น' },
+  { icon: 'leaf', tone: 'green', t: 'โรครากเน่าโคนเน่า', d: 'แนะนำราด ไตรโคเดอร์มา และพ่นฟอสโฟเนต ปรับปรุงระบบระบายน้ำ' },
+  { icon: 'shield', tone: 'orange', t: 'แอนแทรคโนส', d: 'แนะนำพ่น แมนโคเซบ 80% WP เว้นระยะการพ่น 7-10 วัน' }
+];
+/* ทะเบียนผลิตภัณฑ์ (chemical_registry_products) — DEMO: ต้องตรวจกับหน่วยงานกำกับ + ฉลากจริงก่อนใช้งาน */
+const REGISTRY = {
+  'สไปนีโทแรม 12% SC': { type: 'สารเคมี', verified: true, phi: 7 }, 'แมนโคเซบ 80% WP': { type: 'สารเคมี', verified: true, phi: 14 },
+  'อะบาเมกติน 1.8% EC': { type: 'สารเคมี', verified: false, phi: null }, 'ไตรโคเดอร์มา': { type: 'สารชีวภัณฑ์', verified: true, phi: 0 },
+  'บิวเวอร์เรีย': { type: 'สารชีวภัณฑ์', verified: true, phi: 0 }, 'บิวเวอร์เรีย + เมตาไรเซียม': { type: 'สารชีวภัณฑ์', verified: true, phi: 0 }
+};
+let SPRAY = [
+  { d: '2025-04-22', plot: 'A2', prob: 'เพลี้ยไฟ', how: 'พ่นยา', prod: 'สไปนีโทแรม 12% SC', rate: '20 มล./น้ำ 20 ลิตร', rai: 95, by: 'ทีมพ่นยา 1', st: 'pending' },
+  { d: '2025-04-23', plot: 'C1', prob: 'โรครากเน่าโคนเน่า', how: 'ราดโคน + พ่น', prod: 'ไตรโคเดอร์มา', rate: '1 กก./น้ำ 200 ลิตร', rai: 200, by: 'ทีมพ่นยา 2', st: 'pending' },
+  { d: '2025-04-21', plot: 'B1', prob: 'แอนแทรคโนส', how: 'พ่นยา', prod: 'แมนโคเซบ 80% WP', rate: '50 กรัม/น้ำ 20 ลิตร', rai: 80, by: 'ทีมพ่นยา 1', st: 'doing' },
+  { d: '2025-04-18', plot: 'B2', prob: 'เพลี้ยแป้ง', how: 'พ่นสารชีวภัณฑ์', prod: 'บิวเวอร์เรีย', rate: '100 กรัม/น้ำ 20 ลิตร', rai: 150, by: 'ทีมพ่นยา 3', st: 'done' },
+  { d: '2025-04-15', plot: 'A1', prob: 'ป้องกัน', how: 'พ่นสารชีวภัณฑ์', prod: 'บิวเวอร์เรีย + เมตาไรเซียม', rate: '100 กรัม/น้ำ 20 ลิตร', rai: 120, by: 'ทีมพ่นยา 1', st: 'done' }
+];
+const SST = { pending: ['รอดำเนินการ', 'orange', 'hourglass'], doing: ['กำลังดำเนินการ', 'blue', 'refresh-cw'], done: ['เสร็จสิ้น', 'green', 'circle-check'] };
+const USE = [
+  { d: '21 เม.ย. 68', p: 'สไปนีโทแรม 12% SC', t: 'สารเคมี', q: '500 มล.', by: 'นายวิชาญ' }, { d: '20 เม.ย. 68', p: 'ไบเวอร์เรีย', t: 'สารชีวภัณฑ์', q: '2 กก.', by: 'น.ส.กมล' },
+  { d: '18 เม.ย. 68', p: 'แมนโคเซบ 80% WP', t: 'สารเคมี', q: '1.5 กก.', by: 'นายสมพร' }, { d: '15 เม.ย. 68', p: 'ไตรโคเดอร์มา', t: 'สารชีวภัณฑ์', q: '2 กก.', by: 'น.ส.กมล' },
+  { d: '10 เม.ย. 68', p: 'อะบาเมกติน 1.8% EC', t: 'สารเคมี', q: '250 มล.', by: 'นายวิชาญ' }
+];
+const PHI = [
+  { plot: 'แปลง A2 (ทุเรียน)', prod: 'สไปนีโทแรม 12% SC', sprayed: '2025-04-21', phi: 7, tone: 'red' },
+  { plot: 'แปลง C1 (ทุเรียน)', prod: 'แมนโคเซบ 80% WP', sprayed: '2025-04-18', phi: 14, tone: 'orange' }
+];
+
+/* ===== Render ===== */
+UI.mountKpis('#kpis', KPIS);
+$('#wxBig').innerHTML = Layout.wxIcon(64);
+const map = Maps.farm('map', PLOTS.map(p => ({ code: p.code, color: RISK[p.r], opacity: .5, alert: p.alert, l1: 'ทุเรียน', l2: p.rai + ' ไร่',
+  popup: `<b>แปลง ${p.code}</b><br>ระดับความเสี่ยง: ${{ normal: 'ปกติ', watch: 'เฝ้าระวัง', high: 'เสี่ยงสูง', outbreak: 'พบการระบาด' }[p.r]}<br><a href="#" onclick="FORMS.scout('${p.code}');return false" style="color:#1f7a3a">+ บันทึกการสำรวจ</a>` })));
+$('#mapFull').onclick = () => Maps.fullscreen(map, '#mapCard');
+$('#pests').innerHTML = PESTS.map((p, i) => `<button class="text-left rounded-xl border bline overflow-hidden" data-pest="${i}"><div class="relative">${scene(p.sc[0], 'h-[96px] !rounded-none', p.sc[1])}<span class="chip-on-img top-1.5 left-1.5 ${{ red: 'bg-red-500', orange: 'bg-orange-500', green: 'bg-green-600' }[p.tone]}">${p.lv}</span></div>
+  <div class="p-2.5"><b class="text-[13.5px] block">${p.n}</b><div class="text-[11.5px] muted">${p.where}</div><span class="bdg t-${p.actTone} !text-[11px] mt-1.5">${p.act}</span>
+  <div class="text-[11px] muted mt-2">ระดับความรุนแรง</div><div class="flex gap-0.5 mt-1">${Array.from({ length: 6 }, (_, k) => `<i class="h-1.5 flex-1 rounded-sm" style="background:${k < p.sev ? p.sevC : 'var(--soft)'}"></i>`).join('')}</div></div></button>`).join('');
+$('#photos').innerHTML = PHOTOS.map(p => `<div><div class="relative">${scene(p.sc[0], 'h-[92px]', p.sc[1])}<span class="chip-on-img bottom-1.5 left-1.5" style="background:${p.c}">${p.n}</span><button class="absolute top-1.5 right-1.5 bg-white/90 rounded-md p-1 text-gray-700" data-toast="ขยายภาพ ${p.n}" aria-label="ขยาย">${ic('zoom-in', 'w-3.5 h-3.5')}</button></div><div class="text-[11.5px] muted mt-1">${p.p}</div></div>`).join('');
+
+let statC;
+function drawStat(n) {
+  if (statC) { statC.destroy(); Charts.list = Charts.list.filter(c => c !== statC); }
+  statC = Charts.make('statChart', { type: 'line', data: { labels: STAT.labels.slice(-n), datasets: STAT.s.map(s => ({ label: s.n, data: s.v.slice(-n), borderColor: s.c, backgroundColor: s.c, tension: .3, pointRadius: 3.5 })) },
+    options: { scales: { y: { min: 0, max: 20, ticks: { stepSize: 5 }, title: { display: true, text: 'จำนวนครั้งที่พบ' } }, x: { grid: { display: false } } } } });
+}
+drawStat(6); $('#statRange').onchange = e => drawStat(+e.target.value);
+Charts.make('areaChart', { type: 'doughnut', data: { labels: AREA.map(a => a.n), datasets: [{ data: AREA.map(a => a.v), backgroundColor: AREA.map(a => a.c), borderWidth: 0 }] }, options: { cutout: '62%', plugins: { legend: { display: false } } } });
+$('#areaLegend').innerHTML = AREA.map(a => `<li class="flex items-center gap-2"><i class="w-2.5 h-2.5 rounded-full inline-block" style="background:${a.c}"></i>${a.n}<span class="ml-auto muted">${a.v} ไร่ (${a.p}%)</span></li>`).join('');
+$('#aiRec').innerHTML = AIREC.map(a => `<div class="flex gap-3 py-2.5 items-start"><span class="ib ib-sm t-${a.tone}">${ic(a.icon)}</span><div class="flex-1"><b class="text-[13px]">${a.t}</b><div class="text-[12px] muted">${a.d}</div></div></div>`).join('');
+
+let sKey = 'all';
+function renderSpray() {
+  $('#sprayBody').innerHTML = SPRAY.filter(s => sKey === 'all' || s.st === sKey).map(s => { const i = SPRAY.indexOf(s), st = SST[s.st], reg = REGISTRY[s.prod];
+    return `<tr><td class="whitespace-nowrap">${thDate(s.d)}</td><td><b>${s.plot}</b></td><td class="whitespace-nowrap">${s.prob}</td><td class="whitespace-nowrap">${s.how}</td>
+    <td class="whitespace-nowrap">${s.prod}${reg && reg.verified ? ` <span title="ฉลาก/ทะเบียนตรวจแล้ว" class="text-green-600">${ic('badge-check', 'w-3.5 h-3.5 inline')}</span>` : ` <span class="trust">Registry Pending</span>`}</td>
+    <td class="whitespace-nowrap">${s.rate}</td><td class="num">${s.rai}</td><td class="whitespace-nowrap">${s.by}</td><td><span class="bdg t-${st[1]}">${ic(st[2], 'w-3.5 h-3.5')}${st[0]}</span></td>
+    <td><button class="btn btn-sm !border-0" data-menu="${i}" aria-label="จัดการ">${ic('ellipsis-vertical')}</button></td></tr>`; }).join('') || `<tr><td colspan="10" class="text-center muted py-6">ไม่มีรายการ</td></tr>`;
+  UI.icons();
+}
+UI.tabs('#sTabs', k => { sKey = k; renderSpray(); }); renderSpray();
+$('#useBody').innerHTML = USE.map(u => `<tr><td class="whitespace-nowrap">${u.d}</td><td class="whitespace-nowrap">${u.p}</td><td>${UI.badge(u.t, u.t === 'สารเคมี' ? 'red' : 'green')}</td><td class="num whitespace-nowrap">${u.q}</td><td class="whitespace-nowrap">${u.by}</td></tr>`).join('');
+const TODAY = new Date('2025-04-21');
+$('#phiList').innerHTML = PHI.map(p => { const until = new Date(p.sprayed); until.setDate(until.getDate() + p.phi); const left = Math.ceil((until - TODAY) / 864e5);
+  return `<div class="rounded-xl p-3 flex gap-3 items-center ${p.tone === 'red' ? 'bg-red-50 dark:bg-red-500/10' : 'bg-orange-50 dark:bg-orange-500/10'}"><span class="w-[54px] h-[54px] shrink-0">${fruitSvg('durian', 54)}</span>
+  <div class="flex-1 min-w-0 text-[12.5px]"><b class="text-[13.5px]">${p.plot}</b><div>${p.prod}</div><div class="muted">พ่นเมื่อ ${thDate(p.sprayed)}</div><div class="muted">เก็บเกี่ยวได้หลัง ${thDate(until)}</div></div>
+  <div class="text-center"><span class="bdg ${p.tone === 'red' ? 'bg-red-500' : 'bg-orange-500'} text-white !text-[14px] !font-bold">${p.phi} วัน</span><div class="text-[10.5px] muted mt-1 whitespace-nowrap">คงเหลือ ${left} วัน</div></div></div>`; }).join('');
+
+/* ===== Events ===== */
+document.addEventListener('click', e => {
+  const m = e.target.closest('[data-menu]'); if (m) { e.stopPropagation(); const s = SPRAY[+m.dataset.menu];
+    UI.menu(m, [{ t: 'ตรวจฉลาก / ทะเบียน', icon: 'badge-check', onClick: () => checkLabel(s.prod) },
+      { t: 'บันทึกการพ่นจริง (สร้าง PHI)', icon: 'clipboard-check', onClick: () => recordSpray(s) },
+      { t: 'เลื่อนตามสภาพอากาศ', icon: 'cloud-rain', onClick: () => UI.toast('CONSIDER_RESCHEDULING — ส่งให้ผู้จัดการตัดสินใจ') }]); return; }
+  const pe = e.target.closest('[data-pest]'); if (pe) { const p = PESTS[+pe.dataset.pest];
+    UI.modal({ title: p.n, saveText: 'สร้างแผน IPM', body: `${scene(p.sc[0], 'h-[180px]', p.sc[1])}<p class="mt-3">${UI.badge(p.lv, p.tone)} <span class="muted text-[13px]">${p.where}</span></p>
+      <ol class="mt-3 text-[13px] list-decimal pl-5 space-y-1"><li>สำรวจและบันทึกภาพ/เปอร์เซ็นต์ความเสียหาย</li><li>ใช้วิธีไม่ใช้สารเคมีก่อน (เขตกรรม เก็บเศษพืช ชีววิธี)</li><li>ผู้เชี่ยวชาญยืนยันสาเหตุ</li><li>ตรวจผลิตภัณฑ์ขึ้นทะเบียนที่ตรงพืช/ศัตรูเป้าหมายตามฉลาก</li><li>อนุมัติ → ปฏิบัติ → บันทึกผล → ติดตาม</li></ol>`, onSave: () => FORMS.spray() }); }
+});
+function checkLabel(prod) {
+  const r = REGISTRY[prod];
+  if (!r || !r.verified) UI.modal({ title: 'BLOCKED_UNVERIFIED_LABEL', saveText: '', body: `<div class="rounded-xl bg-red-50 dark:bg-red-500/10 p-4 flex gap-3"><span class="text-red-600">${ic('octagon-x', 'w-8 h-8')}</span><div><b>${esc(prod)}</b><p class="text-[13px] mt-1">ยังไม่มีข้อมูลฉลาก/ทะเบียนที่ตรวจยืนยัน (crop use + target pest + PHI) — ระบบปิดการอนุมัติคำขอใช้สารนี้</p></div></div>` });
+  else UI.modal({ title: 'ฉลาก/ทะเบียนตรวจแล้ว', saveText: '', body: `<div class="grid grid-cols-2 gap-3 text-[13.5px]"><div><div class="muted">ผลิตภัณฑ์</div><b>${esc(prod)}</b></div><div><div class="muted">ประเภท</div><b>${r.type}</b></div><div><div class="muted">PHI ตามฉลาก</div><b>${r.phi} วัน</b></div><div><div class="muted">สถานะ</div><span class="text-green-600 font-medium">Agronomist Verified (DEMO)</span></div></div><p class="text-[12px] muted mt-3">ข้อมูลตัวอย่าง — ในระบบจริงต้องเก็บ registration_no, label snapshot, PPE, REI, verified_by, verified_at</p>` });
+}
+function recordSpray(s) {
+  const r = REGISTRY[s.prod]; if (!r || !r.verified) { checkLabel(s.prod); return; }
+  UI.formModal(`บันทึกการพ่นจริง — แปลง ${s.plot}`, [
+    { n: 'at', l: 'วัน-เวลาที่พ่น', t: 'datetime-local', req: true }, { n: 'qty', l: 'ปริมาณที่ใช้จริง', req: true }, { n: 'lot', l: 'Lot ผลิตภัณฑ์', req: true },
+    { n: 'ppe', l: 'PPE ที่สวมใส่', t: 'select', o: ['ครบตามฉลาก', 'ไม่ครบ (ระบุเหตุผล)'] }, { n: 'wind', l: 'สภาพลมขณะพ่น', t: 'select', o: ['ลมสงบ', 'ลมอ่อน', 'ลมแรง (ไม่ควรพ่น)'] }, { n: 'by', l: 'ผู้ปฏิบัติ', v: s.by }
+  ], { api: 'POST /api/v1/chemical-applications → สร้าง harvest_holds', onSave: () => { s.st = 'done'; renderSpray(); UI.toast(`สร้าง Harvest Hold แปลง ${s.plot} ${r.phi} วันแล้ว`, 'shield-alert'); } });
+}
+$('#allPests').onclick = () => UI.toast('แสดงรายการโรค/แมลงทั้งหมดจาก pest_catalog + ipm_observations');
+$('#btnMore').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, [{ t: 'ทะเบียนผลิตภัณฑ์ (Registry)', icon: 'book-open', onClick: () => UI.modal({ title: 'ทะเบียนผลิตภัณฑ์ (DEMO)', saveText: '', body: `<table class="tbl tbl-sm"><thead><tr><th>ผลิตภัณฑ์</th><th>ประเภท</th><th>PHI</th><th>สถานะ</th></tr></thead><tbody>${Object.entries(REGISTRY).map(([k, v]) => `<tr><td>${k}</td><td>${v.type}</td><td>${v.phi ?? '-'}</td><td>${v.verified ? UI.badge('Verified', 'green') : UI.badge('Registry Pending', 'yellow')}</td></tr>`).join('')}</tbody></table>` }) }, { t: 'พิมพ์', icon: 'printer', onClick: () => print() }]); };
+window.FORMS = {
+  scout: (plot = 'A1') => UI.formModal('บันทึกการสำรวจโรค/แมลง (IPM)', [
+    { n: 'plot', l: 'แปลง', t: 'select', o: PLOTS.map(p => p.code), v: plot, req: true }, { n: 'date', l: 'วันที่สำรวจ', t: 'date', v: '2025-04-22', req: true },
+    { n: 'pest', l: 'โรค/แมลงที่พบ', t: 'select', o: ['ไม่พบ', ...PESTS.map(p => p.n), 'อื่น ๆ'] }, { n: 'trap', l: 'จำนวนกับดัก/ตัวที่นับได้', t: 'number' },
+    { n: 'pct', l: 'ความเสียหาย (%)', t: 'number' }, { n: 'sev', l: 'ระดับความรุนแรง (1-6)', t: 'number' }, { n: 'photo', l: 'ภาพถ่าย (1-N ภาพ)', t: 'file', full: true }, { n: 'note', l: 'อาการที่พบ', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/ipm-observations' }),
+  spray: () => UI.formModal('คำขอใช้สาร / สั่งพ่นยา', [
+    { n: 'plot', l: 'แปลง', t: 'select', o: PLOTS.map(p => p.code), req: true }, { n: 'date', l: 'วันที่กำหนด', t: 'date', req: true },
+    { n: 'prob', l: 'ปัญหา', t: 'select', o: [...PESTS.map(p => p.n), 'ป้องกัน'] }, { n: 'how', l: 'วิธีจัดการ', t: 'select', o: ['พ่นยา', 'ราดโคน + พ่น', 'พ่นสารชีวภัณฑ์', 'วิธีกล/เขตกรรม'] },
+    { n: 'prod', l: 'ผลิตภัณฑ์ (จากทะเบียน)', t: 'select', o: Object.keys(REGISTRY), req: true }, { n: 'rate', l: 'อัตราใช้ตามฉลาก', req: true },
+    { n: 'rai', l: 'พื้นที่ (ไร่)', t: 'number' }, { n: 'by', l: 'ผู้รับผิดชอบ', t: 'select', o: ['ทีมพ่นยา 1', 'ทีมพ่นยา 2', 'ทีมพ่นยา 3'] }
+  ], { api: 'POST /api/v1/chemical-applications/validate', onSave: d => {
+    const r = REGISTRY[d.prod];
+    if (!r || !r.verified) { setTimeout(() => checkLabel(d.prod), 50); return false; }
+    SPRAY.unshift({ d: d.date, plot: d.plot, prob: d.prob, how: d.how, prod: d.prod, rate: d.rate, rai: +d.rai || 0, by: d.by, st: 'pending' }); renderSpray();
+  } })
+};
+if (location.hash === '#phi') setTimeout(() => { $('#phi').scrollIntoView({ behavior: 'smooth' }); $('#phi').classList.add('hl'); }, 400);
+UI.icons();
+</script>
+</body>
+</html>

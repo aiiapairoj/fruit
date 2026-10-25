@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ติดตามการเติบโตและแผนใส่ปุ๋ย | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="growth" data-loc="อ.แม่ริม จ.เชียงใหม่" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <nav class="text-[13px] muted flex items-center gap-1.5"><a href="dashboard.html" aria-label="หน้าหลัก"><i data-lucide="house" class="w-4 h-4"></i></a><span>/</span><a href="farms.html" class="hover:underline">สวนแม่ริม</a><span>/</span><span>แปลง A1</span><span>/</span><span>ทุเรียน</span></nav>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <h1 class="text-[28px] font-bold leading-tight">ติดตามการเติบโตและแผนใส่ปุ๋ย</h1>
+      <div class="flex flex-wrap gap-2">
+        <a href="farms.html" class="btn"><i data-lucide="arrow-left"></i>กลับ</a>
+        <button class="btn btn-green" data-form="measure"><i data-lucide="clipboard-plus"></i>บันทึกข้อมูล</button>
+        <a href="calendar.html" class="btn"><i data-lucide="calendar-days"></i>ปฏิทินงาน</a>
+        <button class="btn" id="btnMore"><i data-lucide="ellipsis-vertical"></i>เมนูเพิ่มเติม<i data-lucide="chevron-down"></i></button>
+      </div>
+    </div>
+
+    <!-- Header block -->
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card col-span-12 lg:col-span-4 2xl:col-span-3 overflow-hidden relative h-[220px] lg:h-auto min-h-[200px]">
+        <div id="miniMap" class="absolute inset-0"></div>
+        <a href="farms.html" class="btn btn-sm absolute left-3 bottom-3 z-[500] shadow"><i data-lucide="map"></i>ดูแผนที่แปลง</a>
+      </div>
+      <div class="col-span-12 lg:col-span-8 2xl:col-span-9 space-y-4">
+        <div class="card card-pad flex flex-wrap items-center gap-4">
+          <div class="flex items-center gap-3 pr-2"><span id="bigFruit"></span><div><div class="text-[24px] font-bold leading-tight">ทุเรียน</div><span class="bdg t-green !rounded-md !text-[13px]">แปลง A1</span></div></div>
+          <div class="flex flex-wrap gap-3 flex-1" id="hdrChips"></div>
+          <button class="btn" data-toast="เปิดหน้าตั้งค่าแปลง A1 (farms.html)"><i data-lucide="settings"></i>จัดการแปลง</button>
+        </div>
+        <div id="metrics" class="grid grid-cols-2 md:grid-cols-3 2xl:grid-cols-6 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- Stages + forecast -->
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 xl:col-span-6">
+        <div class="card-h"><h2 class="card-t">ระยะการเจริญเติบโตของทุเรียน</h2><a href="calendar.html" class="btn btn-sm btn-icon !w-8 !h-8" aria-label="ไปปฏิทิน"><i data-lucide="chevron-right"></i></a></div>
+        <div id="stages" class="flex items-start justify-between gap-1 overflow-x-auto pb-1"></div>
+        <p class="text-[11.5px] muted mt-3">ระยะปัจจุบันยืนยันจากการสังเกตภาคสนาม (observed_at) — ผู้มีสิทธิ์แก้ไขระยะพร้อมระบุเหตุผลได้</p>
+      </div>
+      <div class="card card-pad col-span-12 xl:col-span-6 !bg-[#fff6f3] dark:!bg-[#211813]">
+        <div class="grid sm:grid-cols-[1.1fr_1fr_auto] gap-4 items-center">
+          <div>
+            <h2 class="card-t mb-3"><span class="ib ib-xs t-red"><i data-lucide="calendar-days"></i></span>คาดการณ์เก็บเกี่ยว</h2>
+            <div class="flex items-center gap-3 rounded-xl bg-white dark:bg-white/5 p-3"><span class="ib t-red"><i data-lucide="calendar-check"></i></span><div><div class="text-[22px] font-bold leading-tight">ก.ค. – ส.ค. 2568</div><div class="text-[12.5px] muted">อีกประมาณ 105 – 135 วัน</div><span class="bdg t-green mt-1">ความแม่นยำ 85%</span></div></div>
+          </div>
+          <div class="flex items-center gap-3 rounded-xl bg-white dark:bg-white/5 p-3 h-full"><span id="fcFruit"></span><div><div class="text-[12.5px] muted">ผลผลิตคาดการณ์</div><div class="text-[26px] font-bold leading-tight">2,800 <span class="text-[14px] font-medium">กก.</span></div><div class="text-[12px] muted">(เฉลี่ย 175 กก./ไร่)</div></div></div>
+          <div class="text-center"><div class="text-[13px] font-medium">ความพร้อมเก็บเกี่ยว</div><div id="readyGauge" class="flex justify-center"></div><div class="text-[12px] muted">อยู่ในระยะ ขยายผล<br>คาดว่าอีก 3-4 เดือน</div></div>
+        </div>
+        <p class="mt-3"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>หน้าต่างพยากรณ์ p10–p90 อ้างอิงวันดอกบานจริง + กฎที่อนุมัติ — ต้องตรวจความแก่จริงก่อนตัด</span></p>
+      </div>
+    </section>
+
+    <!-- Charts + AI -->
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t">กราฟการเติบโต (ค่าเฉลี่ยรายต้น)</h2><select class="sel sel-sm" id="gRange"><option value="6">6 เดือนล่าสุด</option><option value="3">3 เดือนล่าสุด</option></select></div>
+        <div class="relative flex items-center justify-center h-[260px]"><canvas id="growthChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t">ความชื้นดิน / EC / pH</h2><select class="sel sel-sm" id="sRange"><option value="6">6 เดือนล่าสุด</option><option value="3">3 เดือนล่าสุด</option></select></div>
+        <div class="relative flex items-center justify-center h-[260px]"><canvas id="soilChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><i data-lucide="sun" class="w-5 h-5 text-amber-500"></i>AI วิเคราะห์</h2><span class="bdg t-red"><i data-lucide="triangle-alert" class="w-3.5 h-3.5"></i>เสี่ยงปานกลาง</span></div>
+        <div class="rounded-xl t-red !bg-red-50 dark:!bg-red-500/10 p-3 flex gap-3">
+          <span class="ib ib-sm bg-white dark:bg-transparent text-red-600"><i data-lucide="leaf"></i></span>
+          <div><b class="text-[var(--text)]">พบความเสี่ยง <span class="text-red-600">ขาดธาตุโพแทสเซียม (K)</span></b><p class="text-[12.5px] muted mt-1">จากการวิเคราะห์ภาพใบและข้อมูลการเจริญเติบโต พบว่าใบมีสีเหลืองที่ขอบ และการขยายผลช้ากว่าปกติ</p></div>
+        </div>
+        <div class="flex items-center justify-between mt-3"><b class="text-[14px]">คำแนะนำถัดไป</b><a href="ai-advisor.html" class="lnk">ดูรายละเอียด AI<i data-lucide="chevron-right"></i></a></div>
+        <ul class="mt-2 space-y-2 text-[13px]">
+          <li class="flex gap-2"><i data-lucide="circle-check" class="w-5 h-5 text-green-600 shrink-0"></i>ใส่ปุ๋ยสูตร 13-13-21 เพื่อเสริมโพแทสเซียม</li>
+          <li class="flex gap-2"><i data-lucide="circle-check" class="w-5 h-5 text-green-600 shrink-0"></i>ตรวจสอบความชื้นดินให้อยู่ในช่วง 25-35%</li>
+          <li class="flex gap-2"><i data-lucide="circle-check" class="w-5 h-5 text-green-600 shrink-0"></i>เฝ้าระวังโรคผลเน่า ใบและผลในช่วงฤดูฝน</li>
+        </ul>
+        <p class="mt-3"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>คำแนะนำจาก AI — ต้องให้นักวิชาการเกษตรอนุมัติก่อนสร้างใบงาน</span></p>
+      </div>
+    </section>
+
+    <!-- Fertilizer plan / abnormal / activity -->
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-5">
+        <div class="card-h flex-wrap"><h2 class="card-t"><i data-lucide="sprout" class="w-5 h-5 text-green-600"></i>แผนใส่ปุ๋ย</h2>
+          <div class="flex flex-wrap gap-2 items-center"><div class="tabs" id="fTabs"><button class="tab on" data-tab="all">ทั้งหมด (4)</button><button class="tab t-orange" data-tab="pending">รอดำเนินการ (1)</button><button class="tab t-blue" data-tab="doing">กำลังดำเนินการ (1)</button><button class="tab t-green" data-tab="done">เสร็จสิ้น (2)</button></div>
+          <button class="btn btn-green btn-sm" data-form="fplan"><i data-lucide="plus"></i>เพิ่มแผนใส่ปุ๋ย</button></div></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>วันที่แนะนำ</th><th>ระยะพืช</th><th>สูตรปุ๋ย</th><th>อัตรา/ต้น</th><th>วิธีใช้</th><th>สถานะอนุมัติ</th><th>จัดการ</th></tr></thead><tbody id="fBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="ib ib-xs t-red"><i data-lucide="siren"></i></span>บันทึกความผิดปกติ</h2><button class="lnk" data-form="abn"><i data-lucide="plus"></i>เพิ่มบันทึก</button></div>
+        <div id="abnList" class="grid grid-cols-3 gap-3"></div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-3">
+        <div class="card-h"><h2 class="card-t"><span class="ib ib-xs t-blue"><i data-lucide="clipboard-list"></i></span>บันทึกกิจกรรมล่าสุด</h2><a href="calendar.html" class="lnk">ดูทั้งหมด<i data-lucide="chevron-right"></i></a></div>
+        <div id="actList" class="divide-line"></div>
+      </div>
+    </section>
+
+    <!-- Connection strip -->
+    <section class="card card-pad flex flex-wrap items-center gap-4 justify-between">
+      <b class="flex items-center gap-2"><span class="ib ib-xs t-blue"><i data-lucide="badge-check"></i></span>การเชื่อมต่อข้อมูล (IoT / API)</b>
+      <div id="conn" class="flex flex-wrap gap-6 flex-1 justify-around"></div>
+      <a href="integrations.html" class="btn btn-sm"><i data-lucide="settings"></i>จัดการการเชื่อมต่อ</a>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/plots/A1/growth , /api/v1/fertilizer-plans?plot= ===== */
+const HDR = [
+  { l: 'อายุเฉลี่ย', v: '5 ปี', tone: 'red' }, { l: 'สายพันธุ์', v: 'หมอนทอง', tone: 'gray' },
+  { l: 'ระยะการเจริญเติบโต', v: 'ติดผล (ขยายผล)', tone: 'orange', icon: 'wheat' }, { l: 'คาดการณ์เก็บเกี่ยว', v: 'ก.ค. – ส.ค. 2568', tone: 'red', icon: 'apple' },
+  { l: 'สถานะสุขภาพ', v: 'สมบูรณ์ดี', tone: 'green', icon: 'leaf' }
+];
+const METRICS = [
+  { icon: 'tree-deciduous', tone: 'green', l: 'อายุต้นเฉลี่ย', v: '5', u: 'ปี', f: '± 0.5 ปี' },
+  { icon: 'move-vertical', tone: 'green', l: 'ความสูงเฉลี่ย', v: '4.8', u: 'เมตร', f: '▲ +0.3 ม. จากเดือนก่อน', ft: 'text-green-600' },
+  { icon: 'move-horizontal', tone: 'green', l: 'เส้นผ่านศูนย์กลางทรงพุ่ม', v: '6.2', u: 'เมตร', f: '▲ +0.4 ม. จากเดือนก่อน', ft: 'text-green-600' },
+  { icon: 'apple', tone: 'green', l: 'จำนวนผลเฉลี่ย/ต้น', v: '28', u: 'ผล', f: '▲ +6 ผล จากเดือนก่อน', ft: 'text-green-600', fruit: true },
+  { icon: 'droplet', tone: 'blue', l: 'ความชื้นดิน', v: '32', u: '%', f: 'อยู่ในเกณฑ์ดี', ft: 'text-green-600' },
+  { icon: 'flask-conical', tone: 'green', l: 'ค่า pH ดิน', v: '6.1', u: '', f: 'อยู่ในเกณฑ์เหมาะสม', ft: 'text-green-600', ph: true }
+];
+const STAGES = [
+  { t: 'ปลูก', s: '(0-1 ปี)', icon: 'sprout', st: 'done' }, { t: 'แตกใบ', s: '(1-2 ปี)', icon: 'leaf', st: 'done' }, { t: 'ออกดอก', s: '(3-4 ปี)', icon: 'flower-2', st: 'done' },
+  { t: 'ติดผล', s: '(4-5 ปี)', icon: 'cherry', st: 'done' }, { t: 'ขยายผล', s: '(5-6 ปี)', icon: 'apple', st: 'now' }, { t: 'เก็บเกี่ยว', s: '(6 ปีขึ้นไป)', icon: 'shopping-basket', st: 'next' }
+];
+const MONTHS = ['พ.ย. 67', 'ธ.ค. 67', 'ม.ค. 68', 'ก.พ. 68', 'มี.ค. 68', 'เม.ย. 68'];
+const GROWTH = { h: [8, 10.5, 12, 13.5, 15.5, 18], c: [5, 7, 8.5, 9.5, 10.8, 12], f: [2.5, 3.2, 3.8, 4.6, 5.5, 6.6] }; // หน่วยแสดงตามกราฟต้นแบบ
+const SOIL = { m: [50, 49, 51, 50, 46, 44], ec: [0.9, 0.8, 0.75, 0.7, 0.62, 0.55], ph: [6.0, 6.0, 6.1, 6.2, 6.2, 6.1] };
+const FPLAN = [
+  { d: '2025-04-15', stage: 'ขยายผล', f: '13-13-21', rate: '1.0 กก.', how: 'หว่านรอบทรงพุ่ม', st: 'อนุมัติแล้ว', tone: 'green', k: 'done' },
+  { d: '2025-05-15', stage: 'ขยายผล', f: '0-0-60', rate: '0.5 กก.', how: 'หว่านรอบทรงพุ่ม', st: 'รอดำเนินการ', tone: 'orange', k: 'pending' },
+  { d: '2025-06-15', stage: 'ก่อนเก็บเกี่ยว', f: '12-12-17', rate: '1.0 กก.', how: 'หว่านรอบทรงพุ่ม', st: 'รออนุมัติ', tone: 'gray', k: 'doing' },
+  { d: '2025-07-15', stage: 'ก่อนเก็บเกี่ยว', f: 'ปุ๋ยคอก', rate: '3.0 กก.', how: 'หว่านรอบทรงพุ่ม', st: 'รออนุมัติ', tone: 'gray', k: 'done' }
+];
+const ABN = [
+  { t: 'ใบเหลือง', r: 'เสี่ยงปานกลาง', tone: 'orange', d: '18 เม.ย. 2568', sc: ['leaf', 'k'] },
+  { t: 'เพลี้ยไฟ', r: 'เสี่ยงสูง', tone: 'red', d: '15 เม.ย. 2568', sc: ['bug', '#c9b48a'] },
+  { t: 'แผลบนผล', r: 'เสี่ยงต่ำ', tone: 'green', d: '10 เม.ย. 2568', sc: ['durian'] }
+];
+const ACTS = [
+  { d: '22 เม.ย. 2568 09:15', icon: 'sprout', tone: 'green', t: 'ใส่ปุ๋ย สูตร 13-13-21', by: 'สมชาย ใจดี' },
+  { d: '20 เม.ย. 2568 16:30', icon: 'droplet', tone: 'blue', t: 'ให้น้ำ', by: 'ระบบ IoT' },
+  { d: '18 เม.ย. 2568 10:20', icon: 'bug', tone: 'red', t: 'สำรวจโรคแมลง', by: 'สมชาย ใจดี' },
+  { d: '15 เม.ย. 2568 08:45', icon: 'chart-line', tone: 'green', t: 'วัดการเจริญเติบโต', by: 'ระบบ AI' },
+  { d: '10 เม.ย. 2568 14:10', icon: 'scissors', tone: 'red', t: 'ตัดแต่งกิ่ง', by: 'ทีมงานสวน' }
+];
+const CONN = [
+  { icon: 'cloud-sun', t: 'ข้อมูลสภาพอากาศ (Weather API)', d: 'อัปเดตล่าสุด 22 เม.ย. 2568 08:00' },
+  { icon: 'thermometer', t: 'เซ็นเซอร์ดิน (Soil Sensor)', d: 'อัปเดตล่าสุด 22 เม.ย. 2568 09:10' },
+  { icon: 'smartphone', t: 'แอปพลิเคชันมือถือ', d: 'ซิงค์ล่าสุด 22 เม.ย. 2568 09:05' }
+];
+
+/* ===== Render ===== */
+const mm = Maps.farm('miniMap', [{ code: 'A1', color: '#43a047', opacity: .15, stroke: '#ffd400', l1: 'ทุเรียน', l2: '12.0 ไร่', pin: true }], { zoom: false });
+if (mm) { mm.dragging.disable(); mm._group.eachLayer(l => l.setStyle && l.setStyle({ weight: 3 })); }
+$('#bigFruit').innerHTML = fruitSvg('durian', 64); $('#fcFruit').innerHTML = fruitSvg('durian', 64);
+$('#hdrChips').innerHTML = HDR.map(h => `<div class="rounded-xl px-3 py-2 t-${h.tone} !bg-opacity-50 min-w-[110px]"><div class="text-[12px] opacity-80">${h.l}</div><div class="font-bold text-[15px] text-[var(--text)] flex items-center gap-1.5">${h.icon ? ic(h.icon, 'w-5 h-5') : ''}${h.v}</div></div>`).join('');
+$('#metrics').innerHTML = METRICS.map(m => `<div class="card p-3 flex gap-2.5 items-start"><span class="ib ib-sm t-${m.tone}">${m.fruit ? fruitSvg('durian', 24) : m.ph ? '<b class="text-[13px]">pH</b>' : ic(m.icon)}</span><div class="min-w-0"><div class="text-[12px] muted leading-4">${m.l}</div><div class="whitespace-nowrap"><b class="text-[22px]">${m.v}</b> <span class="muted text-[12px]">${m.u}</span></div><div class="text-[11px] leading-4 ${m.ft || 'muted'}">${m.f}</div></div></div>`).join('');
+$('#stages').innerHTML = STAGES.map((s, i) => `<div class="flex items-center ${i < STAGES.length - 1 ? 'flex-1' : ''}"><div class="flex flex-col items-center text-center min-w-[72px] ${s.st === 'now' ? 'rounded-xl bg-[#eaf6d6] dark:bg-lime-500/10 px-2 py-2' : 'py-2'}">
+  <div class="stage-dot ${s.st !== 'next' ? 'stage-on' : 'opacity-60'}">${i >= 3 ? fruitSvg('durian', 34) : ic(s.icon, 'w-6 h-6 text-green-700')}</div>
+  <b class="text-[13px] mt-1.5">${s.t}</b><span class="text-[11.5px] muted">${s.s}</span></div>
+  ${i < STAGES.length - 1 ? `<div class="flex-1 h-0.5 mx-1 -mt-8 ${s.st === 'done' ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'} relative"><i class="absolute -right-1 -top-[3px] w-2 h-2 rounded-full ${s.st === 'done' ? 'bg-green-500' : 'bg-gray-300'}"></i></div>` : ''}</div>`).join('');
+$('#readyGauge').innerHTML = UI.semi(72, { w: 150, color: '#f5b400' });
+
+let gC, sC;
+function drawGrowth(n) {
+  if (gC) { gC.destroy(); Charts.list = Charts.list.filter(c => c !== gC); }
+  const sl = a => a.slice(-n);
+  gC = Charts.make('growthChart', { type: 'line', data: { labels: sl(MONTHS), datasets: [
+    { label: 'ความสูง (เมตร)', data: sl(GROWTH.h), borderColor: '#2e8b47', backgroundColor: Charts.fade('#2e8b47', .2), fill: true, tension: .3, pointRadius: 3.5, pointBackgroundColor: '#2e8b47' },
+    { label: 'เส้นผ่านศูนย์กลางทรงพุ่ม (เมตร)', data: sl(GROWTH.c), borderColor: '#F58A25', backgroundColor: Charts.fade('#F58A25', .16), fill: true, tension: .3, pointRadius: 3.5, pointBackgroundColor: '#F58A25' },
+    { label: 'ขนาดผล (ซม.)', data: sl(GROWTH.f), borderColor: '#8e5bd6', backgroundColor: Charts.fade('#8e5bd6', .14), fill: true, tension: .3, pointRadius: 3.5, pointBackgroundColor: '#8e5bd6' }] },
+    options: { scales: { y: { min: 0, max: 20, ticks: { stepSize: 5 } }, x: { grid: { display: false } } } } });
+}
+function drawSoil(n) {
+  if (sC) { sC.destroy(); Charts.list = Charts.list.filter(c => c !== sC); }
+  const sl = a => a.slice(-n);
+  sC = Charts.make('soilChart', { type: 'line', data: { labels: sl(MONTHS), datasets: [
+    { label: 'ความชื้นดิน (%)', data: sl(SOIL.m), borderColor: '#1e88e5', backgroundColor: Charts.fade('#1e88e5', .18), fill: true, tension: .3, yAxisID: 'y', pointRadius: 3.5, pointBackgroundColor: '#1e88e5' },
+    { label: 'EC (mS/cm)', data: sl(SOIL.ec), borderColor: '#F58A25', tension: .3, yAxisID: 'y1', pointRadius: 3.5, pointBackgroundColor: '#F58A25' },
+    { label: 'pH ดิน', data: sl(SOIL.ph), borderColor: '#8e5bd6', tension: .3, yAxisID: 'y2', pointRadius: 3.5, pointBackgroundColor: '#8e5bd6' }] },
+    options: { scales: { y: { min: 0, max: 60, ticks: { stepSize: 20 } }, y1: { position: 'right', min: 0, max: 2, grid: { display: false }, ticks: { stepSize: 1 } }, y2: { display: false, min: 0, max: 14 }, x: { grid: { display: false } } } } });
+}
+drawGrowth(6); drawSoil(6);
+$('#gRange').onchange = e => drawGrowth(+e.target.value); $('#sRange').onchange = e => drawSoil(+e.target.value);
+
+let fKey = 'all';
+function renderPlan() {
+  $('#fBody').innerHTML = FPLAN.filter(p => fKey === 'all' || p.k === fKey).map(p => `<tr><td class="whitespace-nowrap">${thDate(p.d)}</td><td>${p.stage}</td><td class="font-medium">${p.f}</td><td>${p.rate}</td><td class="whitespace-nowrap">${p.how}</td><td>${UI.badge(p.st, p.tone)}</td><td><button class="btn btn-sm !border-0" data-menu="${FPLAN.indexOf(p)}" aria-label="จัดการ">${ic('ellipsis-vertical')}</button></td></tr>`).join('') || `<tr><td colspan="7" class="text-center muted py-6">ไม่มีรายการ</td></tr>`;
+  UI.icons();
+}
+UI.tabs('#fTabs', k => { fKey = k; renderPlan(); }); renderPlan();
+$('#fBody').addEventListener('click', e => { const m = e.target.closest('[data-menu]'); if (!m) return; e.stopPropagation(); const p = FPLAN[+m.dataset.menu];
+  UI.menu(m, [{ t: 'ดูที่มาของกฎ (Rule provenance)', icon: 'book-open', href: 'fertilizer-plans.html' }, { t: 'ส่งขออนุมัติ', icon: 'send', onClick: () => { p.st = 'รอดำเนินการ'; p.tone = 'orange'; renderPlan(); UI.toast('ส่งให้นักวิชาการเกษตรตรวจสอบแล้ว'); } }, { t: 'บันทึกการใส่ปุ๋ยจริง', icon: 'clipboard-check', onClick: () => FORMS.flog(p) }]); });
+
+$('#abnList').innerHTML = ABN.map(a => `<button class="text-left" data-form="abnView" data-i="${ABN.indexOf(a)}"><div class="relative">${scene(a.sc[0], 'h-[100px]', a.sc[1])}<span class="absolute top-1.5 right-1.5 bg-white/90 rounded-md px-1 text-gray-700">${ic('ellipsis', 'w-4 h-4')}</span></div><b class="block mt-1.5 text-[13.5px]">${a.t}</b>${UI.badge(a.r, a.tone)}<div class="text-[11.5px] muted mt-1">${a.d}</div></button>`).join('');
+$('#actList').innerHTML = ACTS.map(a => `<div class="flex items-center gap-2.5 py-2 text-[12.5px]"><span class="ib ib-xs t-${a.tone}">${ic(a.icon)}</span><div class="flex-1 min-w-0"><b class="block">${a.t}</b><span class="muted text-[11.5px]">${a.d}</span></div><span class="muted whitespace-nowrap text-[12px]">โดย ${a.by}</span></div>`).join('');
+$('#conn').innerHTML = CONN.map(c => `<div class="flex items-center gap-3"><span class="ib ib-sm t-blue">${ic(c.icon)}</span><div><b class="text-[13px]">${c.t}</b><div class="text-[12px] text-green-600 flex items-center gap-1">${ic('circle-check', 'w-3.5 h-3.5')}เชื่อมต่อแล้ว <span class="muted">${c.d}</span></div></div></div>`).join('');
+
+$('#btnMore').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, [
+  { t: 'บันทึกรุ่นดอก / วันดอกบาน', icon: 'flower-2', onClick: () => FORMS.flower() }, { t: 'บันทึกผลตรวจดิน', icon: 'flask-conical', href: 'fertilizer-plans.html' },
+  { t: 'ส่งออกข้อมูลการเติบโต (CSV)', icon: 'download', onClick: exportCSV }, { t: 'พิมพ์รายงานแปลง', icon: 'printer', onClick: () => window.print() }]); };
+function exportCSV() {
+  const rows = [['เดือน', 'ความสูง', 'ทรงพุ่ม', 'ขนาดผล', 'ความชื้นดิน(%)', 'EC', 'pH'], ...MONTHS.map((m, i) => [m, GROWTH.h[i], GROWTH.c[i], GROWTH.f[i], SOIL.m[i], SOIL.ec[i], SOIL.ph[i]])];
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + rows.map(r => r.join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' })); a.download = 'growth_A1.csv'; a.click();
+}
+window.FORMS = {
+  measure: () => UI.formModal('บันทึกข้อมูลการเติบโต — แปลง A1', [
+    { n: 'tree', l: 'ต้นไม้ / กลุ่มตัวอย่าง', t: 'select', o: ['ค่าเฉลี่ยแปลง (สุ่ม 10 ต้น)', 'TUR-A1-001', 'TUR-A1-002'], req: true }, { n: 'observed_at', l: 'วันที่สังเกตจริง (observed_at)', t: 'date', v: '2025-04-22', req: true },
+    { n: 'height', l: 'ความสูง (เมตร)', t: 'number' }, { n: 'canopy', l: 'ทรงพุ่ม (เมตร)', t: 'number' }, { n: 'dbh', l: 'เส้นผ่านศูนย์กลางลำต้น (ซม.)', t: 'number' },
+    { n: 'fruits', l: 'จำนวนผล/ต้น', t: 'number' }, { n: 'fsize', l: 'ขนาดผลเฉลี่ย (มม.)', t: 'number' }, { n: 'sample', l: 'จำนวนตัวอย่าง (sample size)', t: 'number', v: '10' },
+    { n: 'method', l: 'วิธีวัด', t: 'select', o: ['สายวัด/เวอร์เนียร์', 'ไม้วัดความสูง', 'ภาพถ่าย + AI ช่วยวัด'] }, { n: 'stage', l: 'ระยะที่สังเกตได้', t: 'select', o: STAGES.map(s => s.t), v: 'ขยายผล' },
+    { n: 'note', l: 'หมายเหตุ', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/growth-observations' }),
+  flower: () => UI.formModal('บันทึกรุ่นดอก (Flower batch)', [
+    { n: 'label', l: 'ชื่อรุ่นดอก', v: 'รุ่น 2/2568', req: true }, { n: 'start', l: 'วันเริ่มดอกบาน', t: 'date', req: true }, { n: 'peak', l: 'วันดอกบานสูงสุด', t: 'date' }, { n: 'end', l: 'วันสิ้นสุดดอกบาน', t: 'date' },
+    { n: 'note', l: 'หมายเหตุ', t: 'textarea', full: true }], { api: 'POST /api/v1/flower-batches' }),
+  fplan: () => location.href = 'fertilizer-plans.html#create',
+  flog: (p) => UI.formModal(`บันทึกการใส่ปุ๋ยจริง — ${p.f}`, [
+    { n: 'performed_at', l: 'วัน-เวลาที่ปฏิบัติ', t: 'datetime-local', req: true }, { n: 'qty', l: 'ปริมาณจริง', t: 'number', req: true }, { n: 'unit', l: 'หน่วย', t: 'select', o: ['กก./ต้น', 'กรัม/ต้น', 'กก./ไร่'] },
+    { n: 'lot', l: 'Lot สินค้า', req: true }, { n: 'trees', l: 'จำนวนต้นที่ใส่', t: 'number' }, { n: 'by', l: 'ผู้ปฏิบัติ', v: 'สมชาย ใจดี' }], { api: 'POST /api/v1/fertilizer-applications' }),
+  abn: () => UI.formModal('เพิ่มบันทึกความผิดปกติ', [
+    { n: 'type', l: 'ประเภท', t: 'select', o: ['ใบเหลือง', 'เพลี้ยไฟ', 'แผลบนผล', 'ผลร่วง', 'รากเน่า', 'น้ำขัง', 'อื่น ๆ'], req: true }, { n: 'severity', l: 'ระดับความรุนแรง', t: 'select', o: ['เสี่ยงต่ำ', 'เสี่ยงปานกลาง', 'เสี่ยงสูง', 'วิกฤต'] },
+    { n: 'affected', l: 'พื้นที่/ต้นที่ได้รับผลกระทบ (%)', t: 'number' }, { n: 'photo', l: 'รูปภาพ', t: 'file' }, { n: 'note', l: 'อาการที่พบ', t: 'textarea', full: true, req: true }], { api: 'POST /api/v1/abnormalities' }),
+  abnView: () => {}
+};
+document.addEventListener('click', e => { const b = e.target.closest('[data-form="abnView"]'); if (!b) return; const a = ABN[+b.dataset.i];
+  UI.modal({ title: `ความผิดปกติ: ${a.t}`, saveText: 'สร้างงานแก้ไข', body: `${scene(a.sc[0], 'h-[200px]', a.sc[1])}<div class="mt-3 flex gap-2 items-center">${UI.badge(a.r, a.tone)}<span class="muted text-[13px]">พบเมื่อ ${a.d} · แปลง A1</span></div><p class="mt-2 text-[13.5px]">สถานะเคส: <b>รอผู้เชี่ยวชาญยืนยัน</b> — AI ช่วยจัดลำดับสมมติฐานเท่านั้น ไม่สั่งใช้สารอัตโนมัติ</p>`, onSave: () => UI.toast('สร้างใบงานแก้ไข (Work order) แล้ว') }); });
+UI.icons();
+</script>
+</body>
+</html>

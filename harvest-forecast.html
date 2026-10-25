@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>คาดการณ์เก็บเกี่ยว | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="harvest" data-loc="อ.เมือง จ.จันทบุรี" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">คาดการณ์เก็บเกี่ยว</h1>
+        <p class="muted mt-1 text-[15px]">วิเคราะห์ช่วงเวลาเก็บเกี่ยว ผลผลิต และคุณภาพ ด้วย AI จากข้อมูลการเจริญเติบโต สภาพอากาศ และภาพถ่ายจากแปลง</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-green" data-form="plan"><i data-lucide="plus"></i>สร้างแผนเก็บเกี่ยว</button>
+        <select class="sel w-auto" id="fFarm"><option>ทุกสวน</option><option>สวนบ้านป่าเหมือด</option><option>สวนแม่สา</option></select>
+        <select class="sel w-auto" id="fFruit"><option value="">ทุกชนิดผลไม้</option><option value="durian">ทุเรียน</option><option value="mangosteen">มังคุด</option><option value="longan">ลำไย</option><option value="mango">มะม่วง</option></select>
+        <div class="relative"><i data-lucide="calendar-days" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 muted"></i><select class="sel w-auto !pl-9"><option>ก.ค. - ส.ค. 2568</option><option>ก.ย. - ต.ค. 2568</option></select></div>
+      </div>
+    </div>
+
+    <section id="fruitCards" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 lg:col-span-6 xl:col-span-4" id="mapCard">
+        <div class="card-h"><h2 class="card-t">แผนที่แปลงและการคาดการณ์เก็บเกี่ยว</h2><div class="flex gap-2"><a href="farms.html" class="lnk">ดูข้อมูลแปลง</a><button class="lnk" id="mapFull" aria-label="เต็มจอ"><i data-lucide="maximize"></i></button></div></div>
+        <div class="relative h-[300px]"><div id="map" class="map"></div></div>
+        <div class="flex flex-wrap gap-4 mt-3 text-[12px]">
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#43a047]"></i>พร้อมเก็บเกี่ยว</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#f5c518]"></i>ใกล้เก็บเกี่ยว</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#1e88e5]"></i>ยังไม่ถึงเวลา</span>
+          <span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#e53935]"></i>เฝ้าระวัง</span>
+        </div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 xl:col-span-4">
+        <div class="card-h"><div><h2 class="card-t">ปริมาณผลผลิตที่คาดการณ์ (รายสัปดาห์)</h2><div class="text-[12px] muted">หน่วย: กิโลกรัม</div></div><select class="sel sel-sm"><option>ก.ค. - ส.ค. 2568</option></select></div>
+        <div class="relative flex items-center justify-center h-[300px]"><canvas id="weekChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 xl:col-span-4">
+        <h2 class="card-t"><i data-lucide="sun" class="w-5 h-5 text-amber-500"></i>ภาพรวมช่วงเก็บเกี่ยว</h2>
+        <div class="flex items-center justify-between gap-3 mt-2">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-3"><span class="ib t-red"><i data-lucide="calendar-days"></i></span><div><div class="text-[22px] font-bold leading-tight whitespace-nowrap">ก.ค. – ส.ค. 2568</div><div class="text-[12px] muted">ช่วงเก็บเกี่ยวหลัก</div></div></div>
+            <div class="pg mt-3"><i style="width:85%;background:#2e8b47"></i></div>
+            <div class="text-[12px] muted mt-1">คาดว่าเก็บเกี่ยวได้ <b class="text-green-600">85%</b> ของผลผลิตทั้งหมด</div>
+          </div>
+          <div class="text-center shrink-0"><div class="text-[12px] muted">ความแม่นยำโดยรวม</div><div id="accGauge"></div></div>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-3" id="summary"></div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-7">
+        <div class="card-h"><h2 class="card-t">รายละเอียดการคาดการณ์รายแปลง</h2><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>การปล่อยล็อตต้องผ่าน PHI + เกณฑ์ความแก่ + QA</span></div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>แปลง</th><th>ชนิดผลไม้</th><th class="num">ปริมาณคาดการณ์</th><th>ช่วงเก็บเกี่ยว</th><th class="min-w-[150px]">ความพร้อม</th><th>ความแม่นยำ</th><th>สถานะ</th><th>จัดการ</th></tr></thead><tbody id="plotBody"></tbody></table></div>
+      </div>
+      <div class="col-span-12 2xl:col-span-5 space-y-4">
+        <div class="card card-pad">
+          <div class="card-h flex-wrap"><h2 class="card-t">คาดการณ์คุณภาพผลผลิต (เกรด)</h2><div class="tabs" id="gTabs"><button class="tab on" data-tab="durian">ทุเรียน</button><button class="tab" data-tab="mangosteen">มังคุด</button><button class="tab" data-tab="longan">ลำไย</button><button class="tab" data-tab="mango">มะม่วง</button></div></div>
+          <div class="flex flex-col sm:flex-row items-center gap-6">
+            <div class="relative flex items-center justify-center h-[180px] w-[180px] shrink-0"><canvas id="gradeChart" class="max-w-full"></canvas><div class="absolute inset-0 grid place-items-center pointer-events-none text-center"><div><div class="font-bold text-[20px]" id="gTotal">2,800 กก.</div><div class="text-[12px] muted" id="gName">(ทุเรียน)</div></div></div></div>
+            <ul id="gradeLegend" class="space-y-2.5 text-[13.5px] w-full"></ul>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <div class="card-h"><h2 class="card-t">การเตรียมความพร้อมก่อนเก็บเกี่ยว</h2><button class="lnk" id="prepAll">ดูรายการทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+          <div id="prep" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/harvest-forecasts ===== */
+const CARDS = [
+  { k: 'durian', plots: 5, kg: 2800, delta: '+15%', up: true, acc: 85 }, { k: 'mangosteen', plots: 3, kg: 1250, delta: '-8%', up: false, acc: 78 },
+  { k: 'longan', plots: 2, kg: 980, delta: '+12%', up: true, acc: 82 }, { k: 'mango', plots: 2, kg: 450, delta: '+5%', up: true, acc: 80 }
+];
+const MAP = [
+  { code: 'A1', k: 'durian', rai: 120, color: '#43a047', pin: true }, { code: 'A2', k: 'mangosteen', rai: 95, color: '#8e5bd6' },
+  { code: 'B1', k: 'longan', rai: 80, color: '#f5c518' }, { code: 'B2', k: 'mango', rai: 150, color: '#1e88e5' },
+  { code: 'C1', k: 'durian', rai: 200, color: '#e53935' }, { code: 'C2', k: 'longan', rai: 180, color: '#b07d4f' }
+];
+const WEEKS = ['7–13 ก.ค. 68', '14–20 ก.ค. 68', '21–27 ก.ค. 68', '28 ก.ค. – 3 ส.ค. 68', '4–10 ส.ค. 68', '11–17 ส.ค. 68', '18–24 ส.ค. 68'];
+const WEEK_DATA = { durian: [150, 260, 560, 820, 680, 440, 210], mangosteen: [80, 140, 200, 260, 220, 160, 100], longan: [120, 200, 340, 460, 430, 220, 140], mango: [100, 130, 160, 240, 170, 130, 90] };
+const SUMMARY = [
+  { icon: 'package', tone: 'orange', l: 'ปริมาณผลผลิตรวม', v: '5,480 กก.', s: '(+8% จากปีที่แล้ว)', st: 'text-green-600' },
+  { icon: 'sprout', tone: 'green', l: 'จำนวนแปลงเก็บเกี่ยว', v: '12 แปลง', s: 'จากทั้งหมด 15 แปลง' },
+  { icon: 'shopping-basket', tone: 'orange', l: 'มูลค่าคาดการณ์', v: '540,000 บาท', s: '(ราคาเฉลี่ย 98 บาท/กก.)' },
+  { icon: 'star', tone: 'yellow', l: 'เกรดคุณภาพโดยรวม', grades: true }
+];
+const PLOTS = [
+  { code: 'A1', k: 'durian', kg: 1200, win: 'ก.ค. 2568', ready: 92, acc: 87, st: 'พร้อมเก็บเกี่ยว', tone: 'green', phi: false, mat: true },
+  { code: 'A2', k: 'mangosteen', kg: 850, win: 'ก.ค. – ส.ค. 2568', ready: 75, acc: 80, st: 'ใกล้เก็บเกี่ยว', tone: 'orange', phi: true, mat: false },
+  { code: 'B1', k: 'longan', kg: 620, win: 'ส.ค. 2568', ready: 60, acc: 78, st: 'ใกล้เก็บเกี่ยว', tone: 'orange', phi: false, mat: false },
+  { code: 'B2', k: 'mango', kg: 450, win: 'ส.ค. 2568', ready: 45, acc: 72, st: 'ยังไม่ถึงเวลา', tone: 'blue', phi: false, mat: false },
+  { code: 'C1', k: 'durian', kg: 980, win: 'ก.ค. – ส.ค. 2568', ready: 88, acc: 86, st: 'พร้อมเก็บเกี่ยว', tone: 'green', phi: true, mat: true },
+  { code: 'C2', k: 'longan', kg: 480, win: 'ส.ค. 2568', ready: 55, acc: 75, st: 'ยังไม่ถึงเวลา', tone: 'blue', phi: false, mat: false }
+];
+const GRADES = { durian: [45, 35, 15, 5], mangosteen: [40, 38, 17, 5], longan: [44, 36, 16, 4], mango: [38, 40, 18, 4] };
+const GRADE_NAMES = ['เกรด A (พรีเมียม)', 'เกรด B (มาตรฐาน)', 'เกรด C', 'ต่ำกว่าเกรด'], GRADE_C = ['#2e8b47', '#f5c518', '#F58A25', '#e53935'];
+const PREP = [{ icon: 'package-check', l: 'เตรียมภาชนะบรรจุ', p: 85, c: '#2e8b47' }, { icon: 'truck', l: 'วางแผนขนส่ง', p: 70, c: '#F58A25' }, { icon: 'users', l: 'แรงงานเก็บเกี่ยว', p: 90, c: '#2e8b47' }, { icon: 'snowflake', l: 'พื้นที่พักผลผลิต (ลาน/ห้องเย็น)', p: 80, c: '#1e88e5' }];
+
+/* ===== Render ===== */
+$('#fruitCards').innerHTML = CARDS.map(c => `<div class="card card-pad flex items-center gap-4"><div class="w-[84px] h-[84px] shrink-0 grid place-items-center">${fruitSvg(c.k, 80)}</div>
+  <div class="flex-1"><b class="text-[17px]">${FRUIT[c.k].th}</b><div class="text-[12.5px] muted">แปลง ${c.plots} แปลง</div><div class="text-[26px] font-bold leading-tight">${nf(c.kg)} <span class="text-[14px] font-medium">กก.</span></div>
+  <div class="text-[12px] ${c.up ? 'text-green-600' : 'text-red-600'}">${c.up ? '▲' : '▼'} ${c.delta} <span class="muted">จากรอบก่อน</span></div></div>
+  <div class="rounded-xl px-3 py-2 text-center ${c.acc >= 80 ? 't-green' : 't-orange'}"><div class="text-[11.5px]">ความแม่นยำ</div><div class="text-[22px] font-bold">${c.acc}%</div></div></div>`).join('');
+const map = Maps.farm('map', MAP.map(m => ({ code: m.code, k: m.k, color: m.color, pin: m.pin, opacity: .45, l1: FRUIT[m.k].th, l2: m.rai + ' ไร่' })));
+$('#mapFull').onclick = () => Maps.fullscreen(map, '#mapCard');
+$('#accGauge').innerHTML = UI.semi(85, { w: 120, color: '#2e8b47' });
+$('#summary').innerHTML = SUMMARY.map(s => `<div class="rounded-xl border bline p-2.5 flex gap-2"><span class="ib ib-xs t-${s.tone}">${ic(s.icon)}</span><div class="min-w-0"><div class="text-[11.5px] muted">${s.l}</div>${s.grades ? `<div class="flex flex-wrap gap-1 mt-1"><span class="bdg t-green !text-[11px]">A 42%</span><span class="bdg t-yellow !text-[11px]">B 38%</span><span class="bdg t-orange !text-[11px]">C 17%</span><span class="bdg t-red !text-[11px]">ต่ำกว่าเกรด 3%</span></div>` : `<b class="text-[15px]">${s.v}</b><div class="text-[11px] ${s.st || 'muted'}">${s.s}</div>`}</div></div>`).join('');
+
+let weekC;
+function drawWeek(only) {
+  if (weekC) { weekC.destroy(); Charts.list = Charts.list.filter(c => c !== weekC); }
+  const order = ['durian', 'mangosteen', 'longan', 'mango'], col = { durian: '#43a047', mangosteen: '#8e5bd6', longan: '#f5b400', mango: '#1e88e5' };
+  weekC = Charts.make('weekChart', { type: 'bar', data: { labels: WEEKS.map(w => { const m = w.match(/^(.*) (\S+\.\S+\.) (\d+)$/); return m ? [m[1], m[2] + ' ' + m[3]] : w; }), datasets: order.filter(k => !only || k === only).map(k => ({ label: FRUIT[k].th, data: WEEK_DATA[k], backgroundColor: col[k], borderRadius: 3, maxBarThickness: 34 })) },
+    options: { scales: { x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 0, autoSkip: false } }, y: { stacked: true, beginAtZero: true, max: 2000, ticks: { stepSize: 500, callback: v => nf(v) } } } } });
+}
+drawWeek();
+
+function renderPlots() {
+  const f = $('#fFruit').value;
+  $('#plotBody').innerHTML = PLOTS.filter(p => !f || p.k === f).map(p => `<tr><td><b>${p.code}</b></td><td><span class="inline-flex items-center gap-2">${fruitSvg(p.k, 26)}${FRUIT[p.k].th}</span></td><td class="num">${nf(p.kg)} กก.</td><td class="whitespace-nowrap">${p.win}</td>
+    <td><div class="flex items-center gap-2"><div class="pg flex-1"><i style="width:${p.ready}%;background:${p.ready >= 85 ? '#2e8b47' : p.ready >= 60 ? '#f5b400' : '#F58A25'}"></i></div><span class="text-[12.5px] w-9 text-right">${p.ready}%</span></div></td>
+    <td class="${p.acc >= 80 ? 'text-green-600' : 'text-orange-600'} font-medium">${p.acc}%</td><td>${UI.badge(p.st, p.tone)}</td>
+    <td><button class="btn btn-sm !border-0" data-menu="${p.code}" aria-label="จัดการ">${ic('ellipsis-vertical')}</button></td></tr>`).join('');
+  UI.icons();
+}
+renderPlots();
+$('#fFruit').onchange = e => { renderPlots(); drawWeek(e.target.value || null); };
+
+let gradeC;
+function drawGrade(k) {
+  const total = CARDS.find(c => c.k === k).kg, g = GRADES[k];
+  if (gradeC) { gradeC.data.datasets[0].data = g; gradeC.update(); } else
+    gradeC = Charts.make('gradeChart', { type: 'doughnut', data: { labels: GRADE_NAMES, datasets: [{ data: g, backgroundColor: GRADE_C, borderWidth: 0 }] }, options: { cutout: '64%', plugins: { legend: { display: false } } } });
+  $('#gTotal').textContent = `${nf(total)} กก.`; $('#gName').textContent = `(${FRUIT[k].th})`;
+  $('#gradeLegend').innerHTML = GRADE_NAMES.map((n, i) => `<li class="flex items-center gap-2"><i class="w-3 h-3 rounded-full inline-block" style="background:${GRADE_C[i]}"></i>${n}<span class="ml-auto font-semibold">${g[i]}%</span><span class="w-[78px] text-right muted">${nf(Math.round(total * g[i] / 100))} กก.</span></li>`).join('');
+}
+drawGrade('durian'); UI.tabs('#gTabs', k => drawGrade(k));
+$('#prep').innerHTML = PREP.map(p => `<div class="rounded-xl border bline p-3"><div class="flex items-center gap-2"><span class="ib ib-xs t-green">${ic(p.icon)}</span><span class="text-[12px] leading-4">${p.l}</span></div><div class="text-[12.5px] mt-2">พร้อม <b>${p.p}%</b></div><div class="pg mt-1"><i style="width:${p.p}%;background:${p.c}"></i></div></div>`).join('');
+
+/* ===== QA release check (PHI / Maturity) ===== */
+function qaRelease(p) {
+  const checks = [
+    ['ไม่มี Harvest Hold (PHI) ที่ยังมีผล', !p.phi, 'PHI_HOLD_ACTIVE'],
+    ['ผ่านการตรวจความแก่จริง (maturity test)', p.mat, 'MISSING_MATURITY_EVIDENCE'],
+    ['ข้อกำหนดตลาดปลายทาง / ผลตรวจสารตกค้าง', true, '']
+  ];
+  const ok = checks.every(c => c[1]);
+  UI.modal({ title: `QA Release — แปลง ${p.code} (${FRUIT[p.k].th})`, saveText: ok ? 'อนุมัติปล่อยล็อต' : '', size: 'max-w-[560px]',
+    body: `<ul class="space-y-2">${checks.map(c => `<li class="flex items-center gap-2 rounded-xl p-2.5 ${c[1] ? 'bg-green-50 dark:bg-green-500/10' : 'bg-red-50 dark:bg-red-500/10'}">${ic(c[1] ? 'circle-check' : 'octagon-x', 'w-5 h-5 ' + (c[1] ? 'text-green-600' : 'text-red-600'))}<span class="flex-1 text-[13.5px]">${c[0]}</span>${!c[1] ? `<code class="text-[11px] text-red-600">${c[2]}</code>` : ''}</li>`).join('')}</ul>
+      <p class="mt-3 text-[12.5px] ${ok ? 'text-green-600' : 'text-red-600'} font-medium">${ok ? 'ผ่านเงื่อนไขทั้งหมด — ผู้มีสิทธิ์ QA สามารถอนุมัติได้' : 'BLOCK: ไม่สามารถปล่อยล็อตได้จนกว่าเงื่อนไขจะผ่าน'}</p>`,
+    onSave: () => UI.toast(`สร้าง Harvest Lot LOT-68-${p.code}-001 + QR Traceability แล้ว`) });
+}
+document.addEventListener('click', e => {
+  const m = e.target.closest('[data-menu]'); if (!m) return; e.stopPropagation(); const p = PLOTS.find(x => x.code === m.dataset.menu);
+  UI.menu(m, [{ t: 'ตรวจ QA ก่อนปล่อยล็อต', icon: 'shield-check', onClick: () => qaRelease(p) }, { t: 'บันทึกผลตรวจความแก่', icon: 'flask-conical', onClick: () => FORMS.maturity(p) },
+    { t: 'คำนวณพยากรณ์ใหม่', icon: 'refresh-cw', onClick: () => UI.toast(`POST /api/v1/harvest-forecasts/recalculate — แปลง ${p.code} (บันทึก revision ใหม่ ไม่เขียนทับของเดิม)`) }, { t: 'ดูการเติบโต', icon: 'trending-up', href: 'growth-monitoring.html' }]);
+});
+$('#prepAll').onclick = () => UI.modal({ title: 'รายการเตรียมความพร้อมก่อนเก็บเกี่ยว', saveText: 'บันทึก', body: PREP.map((p, i) => `<label class="flex items-center gap-3 py-2 border-b bline"><span class="flex-1">${p.l}</span><input class="inp !w-24" type="number" name="p${i}" value="${p.p}" min="0" max="100"> %</label>`).join('') });
+window.FORMS = {
+  plan: () => UI.formModal('สร้างแผนเก็บเกี่ยว', [
+    { n: 'plot', l: 'แปลง', t: 'select', o: PLOTS.map(p => `${p.code} - ${FRUIT[p.k].th}`), req: true }, { n: 'date', l: 'วันที่วางแผน', t: 'date', req: true },
+    { n: 'kg', l: 'ปริมาณที่คาดว่าจะเก็บ (กก.)', t: 'number' }, { n: 'crew', l: 'จำนวนแรงงาน', t: 'number' },
+    { n: 'buyer', l: 'ผู้ซื้อ / ตลาดปลายทาง', t: 'select', o: ['ตลาดในประเทศ', 'ส่งออกจีน', 'ล้ง/ผู้รวบรวม'] }, { n: 'note', l: 'หมายเหตุ', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/harvests (ตรวจ PHI/QA ก่อน release)' }),
+  maturity: (p) => UI.formModal(`ผลตรวจความแก่ — แปลง ${p.code}`, [
+    { n: 'date', l: 'วันที่ตรวจ', t: 'date', req: true }, { n: 'days', l: 'อายุผลหลังดอกบาน (วัน)', t: 'number' }, { n: 'dm', l: 'Dry matter (%)', t: 'number' },
+    { n: 'brix', l: '°Brix', t: 'number' }, { n: 'result', l: 'ผลการตรวจ', t: 'select', o: ['ผ่าน', 'ไม่ผ่าน', 'ตรวจซ้ำ'] }, { n: 'note', l: 'หมายเหตุ (ห้ามใช้อายุผลเป็นเกณฑ์เดียว)', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/harvest-maturity-tests', onSave: d => { if (d.result === 'ผ่าน') p.mat = true; } })
+};
+UI.icons();
+</script>
+</body>
+</html>

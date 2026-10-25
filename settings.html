@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตั้งค่าระบบ | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="settings" data-loc="อำเภอจอมบึง" data-search="ค้นหาสวน แปลง ต้นไม้ หรือรายงาน...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4 pb-28">
+    <div class="flex gap-3 items-start">
+      <span class="mt-1"><i data-lucide="settings" class="w-9 h-9"></i></span>
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">ตั้งค่าระบบ</h1>
+        <p class="muted mt-1 text-[15px]">จัดการการตั้งค่าทั้งหมดของแพลตฟอร์มติดตามการเติบโตของผลไม้ ให้เหมาะสมกับการใช้งานของคุณ</p>
+      </div>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <!-- Settings nav -->
+      <nav class="card p-2 col-span-12 lg:col-span-3 h-max lg:sticky lg:top-[84px]" id="setNav" aria-label="หมวดการตั้งค่า"></nav>
+
+      <div class="col-span-12 lg:col-span-9 grid grid-cols-12 gap-4 h-max">
+        <!-- Org -->
+        <div class="card card-pad col-span-12 xl:col-span-6" id="sec-org">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="building-2" class="w-5 h-5"></i></span>ข้อมูลองค์กร</h2><button class="lnk" data-form="org"><i data-lucide="pencil"></i>แก้ไข</button></div>
+          <div class="flex flex-col sm:flex-row gap-5">
+            <div class="relative w-[120px] h-[120px] shrink-0 mx-auto sm:mx-0"><div class="w-full h-full rounded-full overflow-hidden"></div></div>
+            <dl id="orgInfo" class="grid grid-cols-[110px_1fr] gap-y-2 text-[13.5px] flex-1"></dl>
+          </div>
+        </div>
+        <!-- Defaults -->
+        <div class="card card-pad col-span-12 xl:col-span-6" id="sec-units">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="land-plot" class="w-5 h-5"></i></span>การตั้งค่าสวนเริ่มต้น</h2><button class="lnk" id="editDefaults"><i data-lucide="pencil"></i>แก้ไข</button></div>
+          <div class="grid sm:grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]" id="defaults"></div>
+          <div class="flex items-center justify-between mt-4 text-[13.5px]"><span class="flex items-center gap-1.5">ตั้งเป็นค่าเริ่มต้นสำหรับสวนใหม่ <i data-lucide="info" class="w-4 h-4 muted"></i></span><label class="sw"><input type="checkbox" checked name="defaultForNew"><span></span></label></div>
+        </div>
+        <!-- Notifications -->
+        <div class="card card-pad col-span-12 md:col-span-6 xl:col-span-5" id="sec-notify">
+          <div class="card-h"><h2 class="card-t"><span class="text-orange-500"><i data-lucide="bell-ring" class="w-5 h-5"></i></span>การแจ้งเตือน</h2><button class="lnk" data-form="notifyRule"><i data-lucide="pencil"></i>แก้ไข</button></div>
+          <div id="notify" class="divide-line"></div>
+        </div>
+        <!-- Users -->
+        <div class="card card-pad col-span-12 md:col-span-6 xl:col-span-7" id="sec-users">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="users" class="w-5 h-5"></i></span>ผู้ใช้และสิทธิ์</h2><button class="lnk" id="manageUsers"><i data-lucide="user-cog"></i>จัดการผู้ใช้</button></div>
+          <div id="userStats" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+          <div class="text-[13px] font-semibold mt-4 mb-2">บทบาทหลักในระบบ</div>
+          <div id="roles" class="grid grid-cols-2 xl:grid-cols-4 gap-2"></div>
+        </div>
+        <!-- AI -->
+        <div class="card card-pad col-span-12 md:col-span-6" id="sec-ai">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="bot" class="w-5 h-5"></i></span>AI / Automation</h2><button class="lnk" data-toast="ตั้งค่า AI provider ได้ที่ IoT/API"><i data-lucide="pencil"></i>แก้ไข</button></div>
+          <div id="aiSet" class="space-y-3 text-[13px]"></div>
+        </div>
+        <!-- IoT -->
+        <div class="card card-pad col-span-12 md:col-span-6" id="sec-iot">
+          <div class="card-h"><h2 class="card-t"><span class="text-blue-500"><i data-lucide="wifi" class="w-5 h-5"></i></span>IoT / API</h2><a href="integrations.html" class="lnk">จัดการการเชื่อมต่อ</a></div>
+          <ul class="space-y-3 text-[13px]">
+            <li class="flex items-center gap-2"><i data-lucide="wifi" class="w-4 h-4 muted"></i><span class="flex-1">อุปกรณ์ IoT ที่เชื่อมต่อ</span><span class="text-green-600">●</span> 3 รายการ</li>
+            <li class="flex items-center gap-2"><i data-lucide="key-round" class="w-4 h-4 muted"></i><span class="flex-1">API Keys</span><span class="text-green-600">●</span> 2 รายการ</li>
+            <li class="flex items-center gap-2"><i data-lucide="webhook" class="w-4 h-4 muted"></i><span class="flex-1">Webhook</span><span class="text-green-600">●</span> 1 รายการ</li>
+            <li class="flex items-center gap-2"><i data-lucide="info" class="w-4 h-4 muted"></i><span class="flex-1">สถานะการเชื่อมต่อ</span><span class="bdg t-green">ทั้งหมดปกติ</span></li>
+          </ul>
+        </div>
+        <!-- Security -->
+        <div class="card card-pad col-span-12 md:col-span-6" id="sec-security">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="shield-check" class="w-5 h-5"></i></span>ความปลอดภัย</h2><button class="lnk" data-toast="นโยบายความปลอดภัย: CSRF + RBAC + session hardening เปิดตลอด"><i data-lucide="pencil"></i>แก้ไข</button></div>
+          <div id="secSet" class="space-y-3 text-[13px]"></div>
+        </div>
+        <!-- Backup -->
+        <div class="card card-pad col-span-12 md:col-span-6" id="sec-backup">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="database" class="w-5 h-5"></i></span>สำรองข้อมูล</h2><button class="lnk" id="backupNow"><i data-lucide="pencil"></i>แก้ไข</button></div>
+          <div id="bkSet" class="space-y-3 text-[13px]"></div>
+        </div>
+        <!-- Workflow (เพิ่มเติมให้ครบตามเมนูซ้าย) -->
+        <div class="card card-pad col-span-12 xl:col-span-6" id="sec-workflow">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="workflow" class="w-5 h-5"></i></span>แบบฟอร์มและเวิร์กโฟลว์</h2></div>
+          <ul class="divide-line text-[13px]" id="wfList"></ul>
+        </div>
+        <div class="card card-pad col-span-12 xl:col-span-6" id="sec-audit">
+          <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="scroll-text" class="w-5 h-5"></i></span>บันทึกการตรวจสอบ (Audit log) ล่าสุด</h2><button class="lnk" data-toast="ส่งออก audit log (เฉพาะผู้มีสิทธิ์)">ส่งออก</button></div>
+          <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>เวลา</th><th>ผู้ใช้</th><th>การกระทำ</th><th>รายการ</th></tr></thead><tbody id="auditBody"></tbody></table></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Sticky bottom bar -->
+  <div class="sticky bottom-0 z-30 border-t bline bg-[var(--card)]/95 backdrop-blur px-4 lg:px-6 py-3 flex flex-wrap items-center gap-3" id="sec-theme">
+    <b class="flex items-center gap-2"><i data-lucide="palette" class="w-5 h-5 text-green-600"></i>ธีมระบบ และภาษา</b>
+    <span class="muted ml-2">ธีมสี</span>
+    <div class="flex gap-2" id="themeBtns">
+      <button class="btn btn-sm" data-theme="light"><i data-lucide="sun"></i>ธีมสว่าง <span class="muted">(แนะนำ)</span></button>
+      <button class="btn btn-sm" data-theme="dark"><i data-lucide="moon"></i>ธีมมืด</button>
+      <button class="btn btn-sm" data-theme="system"><i data-lucide="monitor"></i>ตามระบบ</button>
+    </div>
+    <span class="muted ml-2">ภาษา</span>
+    <select class="sel sel-sm" id="lang"><option>🇹🇭 ภาษาไทย</option><option>🇬🇧 English</option></select>
+    <button class="btn btn-green ml-auto" id="saveAll"><i data-lucide="save"></i>บันทึกการตั้งค่า</button>
+  </div>
+  <footer id="footer"></footer>
+</div>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET/PATCH /api/v1/settings ===== */
+const KPIS = [
+  { icon: 'users', tone: 'green', label: 'จำนวนผู้ใช้ทั้งหมด', value: '12', unit: 'คน', foot: '+2 จากเดือนที่แล้ว', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'plug', tone: 'green', label: 'การเชื่อมต่อภายนอก', value: '5', unit: 'รายการ', foot: '+1 รายการ', footIcon: 'triangle', footTone: 'green-600', extra: '<a href="integrations.html" class="btn btn-sm btn-soft-green mt-1">ดูรายละเอียด</a>' },
+  { icon: 'bell', tone: 'orange', label: 'กฎการแจ้งเตือน', value: '8', unit: 'รายการ', foot: '+2 รายการ', footIcon: 'triangle', footTone: 'green-600', extra: '<button class="btn btn-sm mt-1" data-form="notifyRule">จัดการ</button>' },
+  { icon: 'shield-check', tone: 'green', label: 'สถานะความปลอดภัย', value: '<span class="text-green-600 flex items-center gap-1.5"><i data-lucide="circle-check" class="w-6 h-6"></i>ปลอดภัย</span>', foot: 'เปิดใช้งาน 2FA แล้ว', extra: '<a href="#sec-security" class="btn btn-sm mt-1">ดูรายละเอียด</a>' }
+];
+const NAV = [
+  { id: 'org', icon: 'clipboard-list', t: 'ข้อมูลองค์กร', d: 'ข้อมูลพื้นฐานและโปรไฟล์องค์กร' }, { id: 'users', icon: 'users', t: 'ผู้ใช้และสิทธิ์', d: 'จัดการผู้ใช้ บทบาท และสิทธิ์การเข้าถึง' },
+  { id: 'notify', icon: 'bell', t: 'การแจ้งเตือน', d: 'ตั้งค่าช่องทางและกฎการแจ้งเตือน' }, { id: 'ai', icon: 'wand-sparkles', t: 'AI / Automation', d: 'ตั้งค่า AI และระบบอัตโนมัติ' },
+  { id: 'iot', icon: 'wifi', t: 'IoT / API', d: 'จัดการอุปกรณ์และการเชื่อมต่อ API' }, { id: 'workflow', icon: 'file-text', t: 'แบบฟอร์มและเวิร์กโฟลว์', d: 'ตั้งค่าแบบฟอร์มและกระบวนการอนุมัติ' },
+  { id: 'units', icon: 'ruler', t: 'หน่วยวัดและค่าเริ่มต้น', d: 'กำหนดหน่วยวัดและค่าเริ่มต้นของระบบ' }, { id: 'security', icon: 'shield', t: 'ความปลอดภัย', d: 'ตั้งค่าความปลอดภัยและการเข้าถึง' },
+  { id: 'backup', icon: 'hard-drive', t: 'สำรองข้อมูล', d: 'จัดการการสำรองข้อมูล' }, { id: 'theme', icon: 'palette', t: 'ธีมระบบ', d: 'ปรับแต่งหน้าตาและภาษา' }
+];
+const ORG = { name: 'สวนบุญไพโรจน์', type: 'สวนผลไม้', owner: 'สมชาย ใจดี', addr: '123 หมู่ 4 ต.จอมบึง อ.จอมบึง จ.ราชบุรี 70150', tel: '081-234-5678', email: 'somchai@bugpairoj.com' };
+const DEFAULTS = [
+  { k: 'tz', l: 'โซนเวลา', o: ['(GMT+7) กรุงเทพฯ'], full: true }, { k: 'lang', l: 'ภาษาของระบบ', o: ['ภาษาไทย', 'English'], full: true },
+  { k: 'area', l: 'หน่วยพื้นที่', o: ['ไร่', 'ไร่-งาน-ตารางวา', 'เฮกตาร์'] }, { k: 'weight', l: 'หน่วยน้ำหนัก', o: ['กิโลกรัม (กก.)', 'ตัน'] },
+  { k: 'temp', l: 'หน่วยอุณหภูมิ', o: ['องศาเซลเซียส (°C)'] }, { k: 'date', l: 'รูปแบบวันที่', o: ['วัน/เดือน/ปี (22/04/2568)', 'วัน เดือน ปี (22 เม.ย. 2568)'] },
+  { k: 'cur', l: 'สกุลเงิน', o: ['บาท (฿)'] }
+];
+const NOTIFY = [
+  { icon: 'bell', c: 'text-orange-500', t: 'การแจ้งเตือนในระบบ (Web)', d: 'แจ้งเตือนผ่านหน้าแดชบอร์ดและในระบบ', on: true },
+  { icon: 'mail', c: 'text-orange-500', t: 'อีเมล', d: 'ส่งแจ้งเตือนทางอีเมล', on: true },
+  { icon: 'message-circle', c: 'text-[#06C755]', t: 'LINE Messaging API', d: 'ส่งแจ้งเตือนผ่าน LINE (Official Account)', on: true },
+  { icon: 'send', c: 'text-sky-500', t: 'Telegram Bot', d: 'ส่งแจ้งเตือนผ่าน Telegram', on: false },
+  { icon: 'message-square', c: 'muted', t: 'SMS', d: 'ส่งแจ้งเตือนทาง SMS', on: false }
+];
+const USERS = [{ icon: 'users', tone: 'green', v: 12, l: 'ผู้ใช้ทั้งหมด' }, { icon: 'user-cog', tone: 'orange', v: 3, l: 'ผู้ดูแลระบบ' }, { icon: 'user', tone: 'blue', v: 7, l: 'ผู้ใช้งานทั่วไป' }, { icon: 'user-check', tone: 'green', v: 2, l: 'ผู้ดูแลสวน' }];
+const ROLES = [
+  { icon: 'crown', tone: 'orange', t: 'ผู้ดูแลระบบ', n: '3 คน', d: 'จัดการทุกเมนูและการตั้งค่าทั้งระบบ' }, { icon: 'users', tone: 'green', t: 'ผู้จัดการสวน', n: '2 คน', d: 'จัดการสวน แปลง และสมาชิกทีม' },
+  { icon: 'user', tone: 'blue', t: 'เจ้าหน้าที่', n: '5 คน', d: 'บันทึกข้อมูล ติดตามงาน และดูรายงาน' }, { icon: 'lock', tone: 'purple', t: 'ผู้ดูแลแบบจำกัด', n: '2 คน', d: 'เข้าถึงเฉพาะเมนูที่กำหนด' }
+];
+const AISET = [
+  { icon: 'chart-line', t: 'เปิดใช้งาน AI วิเคราะห์การเติบโต', on: true }, { icon: 'siren', t: 'การแจ้งเตือนความเสี่ยงอัตโนมัติ', on: true },
+  { icon: 'sparkles', t: 'สร้างคำแนะนำการดูแลอัตโนมัติ', on: true }, { icon: 'clock', t: 'ความถี่ในการวิเคราะห์ข้อมูล', sel: ['ทุกวัน', 'ทุก 6 ชั่วโมง', 'ทุกสัปดาห์'] }
+];
+const SECSET = [
+  { icon: 'lock', t: 'ยืนยันตัวตนแบบสองขั้นตอน (2FA)', on: true }, { icon: 'timer', t: 'หมดอายุการใช้งานอัตโนมัติ', sel: ['30 นาที', '15 นาที', '60 นาที'] },
+  { icon: 'key-round', t: 'นโยบายรหัสผ่าน', badge: 'เปิดใช้งาน' }, { icon: 'file-clock', t: 'บันทึกกิจกรรมการใช้งาน', on: true }, { icon: 'globe-lock', t: 'จำกัดการเข้าถึงตาม IP', on: false }
+];
+const BKSET = [
+  { icon: 'refresh-cw', t: 'สำรองข้อมูลอัตโนมัติ', on: true }, { icon: 'calendar', t: 'ความถี่ในการสำรอง', sel: ['ทุกวัน', 'ทุกสัปดาห์'] },
+  { icon: 'clock', t: 'เวลา', sel: ['02:00', '03:00', '23:00'] }, { icon: 'history', t: 'เก็บข้อมูลย้อนหลัง', sel: ['90 วัน', '30 วัน', '365 วัน'] }, { icon: 'cloud', t: 'สำรองไปยัง Cloud', badge: 'เชื่อมต่อแล้ว' }
+];
+const WF = [
+  { t: 'อนุมัติแผนใส่ปุ๋ย', d: 'จัดทำแผน → นักวิชาการตรวจ → ผู้จัดการอนุมัติ → ใบงาน', on: true },
+  { t: 'อนุมัติคำขอใช้สารเคมี', d: 'ต้องมีฉลาก/ทะเบียน verified + PHI ก่อนอนุมัติ', on: true, lock: true },
+  { t: 'QA Release ล็อตผลผลิต', d: 'ตรวจ PHI + ความแก่ + ตลาดปลายทาง ก่อนปล่อย', on: true, lock: true },
+  { t: 'แบบฟอร์มตรวจสวนภาคสนาม (Offline)', d: 'Checklist + GPS + ภาพถ่าย 1–N ภาพ', on: true }
+];
+const AUDIT = [
+  ['22 เม.ย. 68 09:15', 'ผู้จัดการสวน', 'อนุมัติ', 'แผนใส่ปุ๋ย A2 (13-13-21)'], ['22 เม.ย. 68 08:02', 'ระบบ', 'สร้าง', 'Harvest Hold แปลง A2 (PHI 7 วัน)'],
+  ['21 เม.ย. 68 14:20', 'นักวิชาการเกษตร', 'ตรวจสอบ', 'กฎปุ๋ยทุเรียน v1.2'], ['21 เม.ย. 68 10:11', 'สมชาย ใจดี', 'ส่งออก', 'รายงานการใช้ปุ๋ย (Excel)']
+];
+
+/* ===== Render ===== */
+UI.mountKpis('#kpis', KPIS);
+$('#setNav').innerHTML = NAV.map((n, i) => `<a href="#sec-${n.id}" class="flex items-center gap-3 p-3 rounded-xl hover:bg-[var(--soft)] ${i === 0 ? 'bg-[#eef7ef] dark:bg-green-500/10 border-l-4 border-[#2e8b47]' : ''}" data-nav="${n.id}"><span class="${i === 0 ? 'text-green-600' : 'muted'}">${ic(n.icon, 'w-5 h-5')}</span><span class="flex-1"><b class="block text-[14px]">${n.t}</b><span class="text-[11.5px] muted">${n.d}</span></span>${ic('chevron-right', 'w-4 h-4 muted')}</a>`).join('');
+$('#sec-org .rounded-full').innerHTML = scene('orchard', 'h-full !rounded-full', 8);
+$('#sec-org .relative').insertAdjacentHTML('beforeend', `<button class="absolute bottom-1 right-1 w-8 h-8 rounded-full bg-white shadow grid place-items-center text-gray-700" data-toast="อัปโหลดรูปองค์กร (ตรวจ MIME + บีบอัดภาพ)" aria-label="เปลี่ยนรูป">${ic('camera', 'w-4 h-4')}</button>`);
+function renderOrg() {
+  $('#orgInfo').innerHTML = [['ชื่อองค์กร', ORG.name], ['ประเภทธุรกิจ', ORG.type], ['เจ้าของ', ORG.owner], ['ที่อยู่', ORG.addr], ['เบอร์โทรศัพท์', ORG.tel], ['อีเมล', ORG.email]].map(r => `<dt class="muted">${r[0]}</dt><dd>${esc(r[1])}</dd>`).join('')
+    + `<dt class="muted">โลโก้</dt><dd class="flex items-center gap-2">${LOGO}<span><b class="block leading-5">BUGpairoj</b><span class="text-[11px] muted">Fruit Growth AI 360°</span></span></dd>`;
+}
+renderOrg();
+$('#defaults').innerHTML = DEFAULTS.map(d => `<label class="flex items-center gap-3 ${d.full ? 'sm:col-span-2' : ''}"><span class="w-[100px] shrink-0 muted">${d.l}</span><select class="sel sel-sm !w-full" name="${d.k}" disabled>${d.o.map(o => `<option>${o}</option>`).join('')}</select></label>`).join('');
+const sw = (on, name) => `<label class="sw"><input type="checkbox" name="${name}" ${on ? 'checked' : ''}><span></span></label>`;
+$('#notify').innerHTML = NOTIFY.map((n, i) => `<div class="flex items-center gap-3 py-2.5"><span class="${n.c}">${ic(n.icon, 'w-5 h-5')}</span><div class="flex-1"><b class="text-[13.5px]">${n.t}</b><div class="text-[12px] muted">${n.d}</div></div>${sw(n.on, 'notify_' + i)}</div>`).join('')
+  + `<p class="text-[11.5px] muted pt-2">หมายเหตุ: LINE Notify ยุติบริการแล้ว — ระบบใช้ LINE Messaging API แทน</p>`;
+$('#userStats').innerHTML = USERS.map(u => `<div class="flex items-center gap-2"><span class="ib ib-sm t-${u.tone}">${ic(u.icon)}</span><div><b class="text-[20px] leading-none">${u.v}</b><div class="text-[11.5px] muted">${u.l}</div></div></div>`).join('');
+$('#roles').innerHTML = ROLES.map(r => `<div class="rounded-xl t-${r.tone} p-2.5"><div class="flex items-center gap-1.5 font-semibold text-[13px]">${ic(r.icon, 'w-4 h-4')}${r.t}<span class="ml-auto bdg bg-white/70 dark:bg-black/20 !text-[11px]">${r.n}</span></div><p class="text-[11.5px] mt-1 text-[var(--muted)]">${r.d}</p></div>`).join('');
+const row = (x, i, p) => `<div class="flex items-center gap-2"><span class="muted">${ic(x.icon, 'w-4 h-4')}</span><span class="flex-1">${x.t}</span>${x.sel ? `<select class="sel sel-sm" name="${p}_${i}">${x.sel.map(o => `<option>${o}</option>`).join('')}</select>` : x.badge ? UI.badge(x.badge, 'green', true) : sw(x.on, p + '_' + i)}</div>`;
+$('#aiSet').innerHTML = AISET.map((x, i) => row(x, i, 'ai')).join('');
+$('#secSet').innerHTML = SECSET.map((x, i) => row(x, i, 'sec')).join('');
+$('#bkSet').innerHTML = BKSET.map((x, i) => row(x, i, 'bk')).join('') + `<button class="btn btn-sm w-full mt-1" id="runBackup">${ic('download-cloud')}สำรองข้อมูลตอนนี้</button>`;
+$('#wfList').innerHTML = WF.map((w, i) => `<li class="flex items-center gap-3 py-2.5"><div class="flex-1"><b>${w.t}</b>${w.lock ? ` <span class="trust">${ic('lock', 'w-3 h-3')}บังคับตามนโยบายความปลอดภัย</span>` : ''}<div class="text-[12px] muted">${w.d}</div></div>${w.lock ? `<label class="sw opacity-60"><input type="checkbox" checked disabled><span></span></label>` : sw(w.on, 'wf_' + i)}</li>`).join('');
+$('#auditBody').innerHTML = AUDIT.map(a => `<tr><td class="whitespace-nowrap">${a[0]}</td><td class="whitespace-nowrap">${a[1]}</td><td>${UI.badge(a[2], a[2] === 'ส่งออก' ? 'blue' : 'green')}</td><td>${a[3]}</td></tr>`).join('');
+
+/* ===== Theme buttons ===== */
+function paintTheme() { const cur = Theme.get(); $$('#themeBtns [data-theme]').forEach(b => { const on = b.dataset.theme === cur; b.classList.toggle('btn-soft-green', on); b.classList.toggle('!border-[#2e8b47]', on); }); }
+$('#themeBtns').addEventListener('click', e => { const b = e.target.closest('[data-theme]'); if (!b) return; Theme.set(b.dataset.theme); paintTheme(); });
+paintTheme();
+
+/* ===== Nav highlight on scroll ===== */
+$('#setNav').addEventListener('click', e => { const a = e.target.closest('[data-nav]'); if (!a) return; e.preventDefault(); const t = $('#sec-' + a.dataset.nav); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); t.classList.remove('hl'); void t.offsetWidth; t.classList.add('hl'); setActive(a.dataset.nav); });
+function setActive(id) { $$('#setNav [data-nav]').forEach(a => { const on = a.dataset.nav === id; a.classList.toggle('bg-[#eef7ef]', on); a.classList.toggle('border-l-4', on); a.classList.toggle('border-[#2e8b47]', on); a.firstElementChild.classList.toggle('text-green-600', on); a.firstElementChild.classList.toggle('muted', !on); }); }
+
+/* ===== Events ===== */
+$('#editDefaults').onclick = () => { const dis = $('#defaults select').disabled; $$('#defaults select').forEach(s => s.disabled = !dis); $('#editDefaults').innerHTML = dis ? `${ic('check')}เสร็จสิ้น` : `${ic('pencil')}แก้ไข`; UI.icons(); };
+$('#manageUsers').onclick = () => UI.modal({ title: 'จัดการผู้ใช้', saveText: '', size: 'max-w-[760px]', body: `<div class="flex justify-end mb-3"><button type="button" class="btn btn-green btn-sm" id="addUser">${ic('user-plus')}เพิ่มผู้ใช้</button></div><div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>ชื่อ</th><th>อีเมล</th><th>บทบาท</th><th>สิทธิ์สวน</th><th>MFA</th><th>สถานะ</th></tr></thead><tbody>${[['สมชาย ใจดี', 'somchai@bugpairoj.com', 'ผู้ดูแลระบบ', 'ทุกสวน', true], ['นภาพร แสงดี', 'napaporn@bugpairoj.com', 'ผู้จัดการสวน', 'สวนแม่ริม', true], ['วิทยา กมล', 'wittaya@bugpairoj.com', 'เจ้าหน้าที่', 'สวนบ้านป่าตอง', false], ['นักวิชาการเกษตร', 'agronomist@bugpairoj.com', 'นักวิชาการเกษตร', 'ทุกสวน', true]].map(u => `<tr><td>${u[0]}</td><td>${u[1]}</td><td>${u[2]}</td><td>${u[3]}</td><td>${u[4] ? UI.badge('เปิด', 'green') : UI.badge('ปิด', 'gray')}</td><td>${UI.badge('ใช้งาน', 'green', true)}</td></tr>`).join('')}</tbody></table></div>` });
+document.addEventListener('click', e => { if (e.target.closest('#addUser')) { setTimeout(() => FORMS.user(), 30); } if (e.target.closest('#runBackup')) { UI.toast('เริ่มสำรองข้อมูล — mysqldump + ไฟล์แนบ (backup_job_runs)', 'loader'); setTimeout(() => UI.toast('สำรองข้อมูลสำเร็จ · fg360_2568-04-22_0215.sql.gz'), 1500); } });
+$('#backupNow').onclick = () => $('#runBackup').click();
+$('#saveAll').onclick = () => { const data = {}; $$('main input[name], main select[name]').forEach(x => data[x.name] = x.type === 'checkbox' ? x.checked : x.value); console.info('PATCH /api/v1/settings', data); UI.toast('บันทึกการตั้งค่าเรียบร้อย'); };
+$('#lang').onchange = e => UI.toast(e.target.value.includes('English') ? 'English UI — available in Phase 2' : 'ใช้งานภาษาไทย');
+window.FORMS = {
+  org: () => UI.formModal('แก้ไขข้อมูลองค์กร', [
+    { n: 'name', l: 'ชื่อองค์กร', v: ORG.name, req: true }, { n: 'type', l: 'ประเภทธุรกิจ', t: 'select', o: ['สวนผลไม้', 'วิสาหกิจชุมชน', 'บริษัท'], v: ORG.type },
+    { n: 'owner', l: 'เจ้าของ', v: ORG.owner }, { n: 'tel', l: 'เบอร์โทรศัพท์', t: 'tel', v: ORG.tel }, { n: 'email', l: 'อีเมล', t: 'email', v: ORG.email, full: true }, { n: 'addr', l: 'ที่อยู่', t: 'textarea', v: ORG.addr, full: true }
+  ], { api: 'PATCH /api/v1/settings/organization', onSave: d => { Object.assign(ORG, d); renderOrg(); } }),
+  notifyRule: () => UI.formModal('กฎการแจ้งเตือน', [
+    { n: 'event', l: 'เหตุการณ์', t: 'select', o: ['ความเสี่ยงโรค/แมลงระดับสูง', 'PHI ใกล้ครบ / Harvest Hold', 'งานเลยกำหนด', 'เซ็นเซอร์ออฟไลน์', 'สต็อกต่ำกว่ากำหนด', 'ฝนตกหนัก/พยากรณ์อากาศรุนแรง'], req: true },
+    { n: 'level', l: 'ระดับ', t: 'select', o: ['info', 'caution', 'high', 'critical'] }, { n: 'channel', l: 'ช่องทาง', t: 'select', o: ['ในระบบ + LINE Messaging API', 'ในระบบ + Email', 'ในระบบ + Telegram', 'ทุกช่องทาง'] },
+    { n: 'to', l: 'ผู้รับ (บทบาท)', t: 'select', o: ['ผู้จัดการสวน', 'นักวิชาการเกษตร', 'ทุกคนในสวน'] }, { n: 'dedupe', l: 'กันแจ้งซ้ำ (นาที)', t: 'number', v: '60' }
+  ], { api: 'POST /api/v1/settings/alert-rules' }),
+  user: () => UI.formModal('เพิ่มผู้ใช้', [
+    { n: 'name', l: 'ชื่อ-นามสกุล', req: true }, { n: 'email', l: 'อีเมล', t: 'email', req: true }, { n: 'role', l: 'บทบาท', t: 'select', o: ['ผู้ดูแลระบบ', 'ผู้จัดการสวน', 'นักวิชาการเกษตร', 'QA/GAP', 'เจ้าหน้าที่', 'คนงาน/ผู้สำรวจ', 'ผู้ดูแลแบบจำกัด'] },
+    { n: 'farm', l: 'สิทธิ์สวน (farm scope)', t: 'select', o: ['ทุกสวน', 'สวนบ้านป่าเหมือด', 'สวนแม่สา', 'สวนดอยสะเก็ด'] }, { n: 'mfa', l: 'บังคับ MFA', t: 'select', o: ['บังคับ', 'ไม่บังคับ'] }
+  ], { api: 'POST /api/v1/users (ส่งลิงก์ตั้งรหัสผ่าน — ไม่ส่งรหัสผ่านทางอีเมล)' })
+};
+UI.icons();
+</script>
+</body>
+</html>

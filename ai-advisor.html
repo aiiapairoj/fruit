@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI วิเคราะห์และช่วยตัดสินใจ | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+<style>
+  .heat{position:absolute;border:2px solid #fff;border-radius:4px;background:radial-gradient(circle at 50% 50%,rgba(229,57,53,.85),rgba(245,138,37,.6) 35%,rgba(255,235,59,.45) 55%,rgba(76,175,80,.25) 75%,transparent 90%)}
+</style>
+</head>
+<body data-page="ai" data-loc="อ.เมือง จ.จันทบุรี" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div class="flex gap-3 items-start">
+        <span class="text-green-600 mt-1"><i data-lucide="leaf" class="w-10 h-10"></i></span>
+        <div>
+          <h1 class="text-[28px] font-bold leading-tight">AI วิเคราะห์และช่วยตัดสินใจ</h1>
+          <p class="muted mt-1 text-[15px]">วิเคราะห์สุขภาพพืชจากภาพถ่าย ตรวจจับความผิดปกติ ประเมินความเสี่ยง และให้คำแนะนำที่เหมาะสม ด้วย AI</p>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-green" id="btnUpload"><i data-lucide="image"></i>อัปโหลดภาพ</button>
+        <button class="btn" id="btnCamera"><i data-lucide="camera"></i>ถ่ายภาพจากมือถือ</button>
+        <div class="relative"><i data-lucide="tree-deciduous" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-green-600"></i><select class="sel w-auto !pl-9" id="treeSel"><option>เลือกแปลง/ต้นไม้</option><option>A1 - ต้นที่ 3</option><option>A2 - ต้นที่ 1</option><option>B1 - ต้นที่ 7</option><option>C1 - ต้นที่ 5</option></select></div>
+        <div class="btn !cursor-default"><i data-lucide="calendar-days"></i><span class="text-left leading-tight"><span class="block text-[11px] muted">วันที่วิเคราะห์</span>22 เม.ย. 2568</span></div>
+      </div>
+    </div>
+    <input type="file" id="file" accept="image/jpeg,image/png,image/webp" class="hidden">
+    <input type="file" id="cam" accept="image/*" capture="environment" class="hidden">
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 2xl:col-span-8">
+        <div class="flex items-start gap-2 mb-3"><span class="text-green-600"><i data-lucide="leaf" class="w-6 h-6"></i></span><div><h2 class="card-t">วิเคราะห์ภาพใบ/ผล</h2><p class="text-[12.5px] muted">อัปโหลดภาพหรือเลือกจากคลัง เพื่อให้ AI วิเคราะห์โรค อาการขาดธาตุอาหาร และความผิดปกติ</p></div></div>
+        <div class="grid lg:grid-cols-[1fr_1fr_1.1fr] gap-4">
+          <div class="relative h-[280px] rounded-xl overflow-hidden" id="origBox"><div id="orig" class="h-full"></div><span class="chip-on-img top-2 left-2 !bg-black/60"></span></div>
+          <div class="relative h-[280px] rounded-xl overflow-hidden" id="aiBox"><div id="aiImg" class="h-full"></div><div id="heat"></div><span class="chip-on-img top-2 left-2 !bg-black/60 flex items-center gap-1"><i data-lucide="scan-line" class="w-3.5 h-3.5"></i>ผลการวิเคราะห์ด้วย AI</span>
+            <button class="absolute bottom-2 right-2 bg-white/90 rounded-lg p-1.5 text-gray-700" id="zoomAi" aria-label="เต็มจอ"><i data-lucide="expand" class="w-4 h-4"></i></button></div>
+          <div id="result"></div>
+        </div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><i data-lucide="sun" class="w-5 h-5 text-amber-500"></i>วิเคราะห์ผลทุเรียน</h2><button class="lnk" id="otherFruit">ดูตัวอย่างอื่น</button></div>
+        <div class="grid grid-cols-[1.4fr_.6fr_1.4fr] gap-3">
+          <div class="h-[210px]" id="fruitMain"></div>
+          <div class="grid grid-rows-4 gap-1.5 h-[210px]" id="fruitThumbs"></div>
+          <div>
+            <div class="text-[12.5px] muted flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-green-500 inline-block"></i>ผลการวิเคราะห์</div>
+            <div class="rounded-lg t-green p-2 mt-1 flex items-center gap-2 font-semibold text-[var(--text)]"><i data-lucide="circle-check" class="w-5 h-5 text-green-600"></i>ไม่พบความผิดปกติ</div>
+            <div class="flex justify-between text-[12.5px] mt-3"><span>ความสมบูรณ์ของผล</span><b>91%</b></div>
+            <div class="pg mt-1"><i style="width:91%;background:#2e8b47"></i></div>
+            <ul class="mt-3 space-y-2 text-[12.5px]" id="fruitChecks"></ul>
+          </div>
+        </div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4 2xl:col-start-9 2xl:row-start-2">
+        <div class="card-h"><h2 class="card-t"><span class="text-orange-500"><i data-lucide="sparkles" class="w-5 h-5"></i></span>ตรวจจับความผิดปกติ (Anomaly Detection)</h2><button class="lnk" data-toast="ดูรายการความผิดปกติทั้งหมด (abnormality_cases)">ดูทั้งหมด</button></div>
+        <div id="anoms" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+      </div>
+      <div class="col-span-12 2xl:col-span-8 2xl:row-start-2 space-y-4">
+        <div class="card card-pad">
+          <h2 class="card-t mb-3"><i data-lucide="sun" class="w-5 h-5 text-amber-500"></i>AI Insight สรุปภาพรวม</h2>
+          <div id="insights" class="grid sm:grid-cols-2 xl:grid-cols-4 gap-3"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="sprout" class="w-5 h-5"></i></span>แนวโน้มความเสี่ยงจากการวิเคราะห์ภาพ</h2><select class="sel sel-sm"><option>7 วันที่ผ่านมา</option><option>30 วันที่ผ่านมา</option></select></div>
+        <div class="relative flex items-center justify-center h-[230px]"><canvas id="riskChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="text-green-600"><i data-lucide="file-text" class="w-5 h-5"></i></span>ผลการวิเคราะห์ล่าสุด</h2><button class="lnk" data-toast="ประวัติการวิเคราะห์ทั้งหมด (ai_predictions — append-only)">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>วันที่/เวลา</th><th>แปลง/ต้นไม้</th><th>ภาพ</th><th>ผลการวิเคราะห์</th><th>ความมั่นใจ</th><th>สถานะ</th></tr></thead><tbody id="histBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 2xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="text-orange-500"><i data-lucide="clipboard-list" class="w-5 h-5"></i></span>คำแนะนำถัดไป (Recommendation)</h2><button class="btn btn-orange btn-sm" id="btnPlan"><i data-lucide="file-plus"></i>สร้างแผนปฏิบัติการ</button></div>
+        <ol id="recs" class="space-y-2"></ol>
+        <p class="mt-3"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>AI Suggestion — ไม่ใช่ผลแล็บ/การวินิจฉัยยืนยัน ต้องให้นักวิชาการตรวจทาน</span></p>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — POST /api/v1/ai/vision/triage (server-side key, opt-in upload) ===== */
+const KPIS = [
+  { icon: 'leaf', tone: 'green', label: 'ภาพที่วิเคราะห์วันนี้', value: '24', unit: 'ภาพ', foot: '+6 จากเมื่อวาน', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'triangle-alert', tone: 'red', label: 'พบความผิดปกติ', value: '5', unit: 'ภาพ', foot: '+2 จากเมื่อวาน', footIcon: 'triangle', footTone: 'red-600' },
+  { icon: 'target', tone: 'green', label: 'ความแม่นยำของ AI', value: '91%', foot: '+3%', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'clipboard-list', tone: 'orange', label: 'แนะนำให้ดำเนินการ', value: '8', unit: 'รายการ', foot: '+3 จากเมื่อวาน', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'chart-line', tone: 'green', label: 'ลดความเสียหายที่คาดการณ์', value: '72%', foot: 'จากการใช้ AI แนะนำ' },
+  { icon: 'coins', tone: 'orange', label: 'ต้นทุนคาดว่าจะลดลง', value: '28%', foot: 'เฉลี่ยต่อฤดูกาล' }
+];
+const RESULT = {
+  title: 'ความเสี่ยงขาดโพแทสเซียม (K)', desc: 'พบอาการใบเหลือง ขอบใบไหม้ ลักษณะเข้ากับอาการขาดโพแทสเซียม', conf: 82,
+  causes: [{ n: 'ขาดโพแทสเซียม (K)', p: 82, c: '#e53935', icon: 'circle-slash' }, { n: 'โรคใบจุด (เชื้อรา)', p: 12, c: '#F58A25', icon: 'circle-alert' }, { n: 'ขาดแมกนีเซียม (Mg)', p: 4, c: '#9aa5a0', icon: 'atom' }, { n: 'ความเครียดจากสภาพอากาศ', p: 2, c: '#9aa5a0', icon: 'sun' }]
+};
+const FRUIT_CHECKS = [['ขนาดผล', 'เหมาะสม', 'green'], ['รูปทรง', 'ปกติ', 'green'], ['สีเปลือก', 'ปกติ', 'green'], ['ความเสี่ยงแตกก่อนเก็บ', 'ต่ำ 8%', 'green']];
+const ANOMS = [
+  { n: 'ความเสี่ยงสูง', sub: 'โรคใบจุด', tone: 'red', icon: 'circle-alert', sc: 'spot' }, { n: 'ขาดโพแทสเซียม', sub: 'ความมั่นใจ 82%', tone: 'orange', icon: 'circle-alert', sc: 'k' },
+  { n: 'หนอนเจาะใบ', sub: 'ความมั่นใจ 76%', tone: 'green', icon: 'circle-check', sc: 'hole' }, { n: 'ไรแดง', sub: 'ความมั่นใจ 67%', tone: 'red', icon: 'circle-alert', sc: 'mite' }
+];
+const INSIGHTS = [
+  { icon: 'leaf', tone: 'green', bg: 'bg-green-50 dark:bg-green-500/10', t: 'แนวโน้มสุขภาพใบ', v: 'เริ่มมีความเสี่ยง', vc: 'text-red-600', d: 'พบสัญญาณขาดธาตุอาหารในหลายแปลง แนะนำให้ตรวจสอบและเสริมโพแทสเซียม' },
+  { icon: 'trending-down', tone: 'green', bg: 'bg-green-50 dark:bg-green-500/10', t: 'แนวโน้มการเกิดโรค', v: 'ลดลง 35%', vc: 'text-green-600', d: 'จาก 2 สัปดาห์ที่ผ่านมา เนื่องจากสภาพอากาศแห้งขึ้น' },
+  { icon: 'thermometer', tone: 'orange', bg: 'bg-orange-50 dark:bg-orange-500/10', t: 'ความเสี่ยงในช่วง 7 วัน', v: 'ปานกลาง', vc: 'text-orange-600', d: 'มีโอกาสเกิดโรคใบจุด 28% จากฝนที่คาดว่าจะมาในสัปดาห์นี้' },
+  { icon: 'chart-column', tone: 'purple', bg: 'bg-purple-50 dark:bg-purple-500/10', t: 'ผลผลิตที่คาดการณ์', v: 'เพิ่มขึ้น 12%', vc: 'text-purple-600', d: 'หากได้รับการจัดการตามคำแนะนำ และควบคุมโรคได้' }
+];
+const RISK = { labels: ['15 เม.ย.', '16 เม.ย.', '17 เม.ย.', '18 เม.ย.', '19 เม.ย.', '20 เม.ย.', '21 เม.ย.', '22 เม.ย.'],
+  s: [{ n: 'ขาดโพแทสเซียม', c: '#e53935', v: [55, 62, 60, 66, 62, 68, 72, 82] }, { n: 'โรคใบจุด', c: '#F58A25', v: [40, 42, 45, 44, 46, 47, 50, 52] }, { n: 'หนอนเจาะใบ', c: '#2e8b47', v: [15, 20, 24, 25, 24, 26, 25, 27] }] };
+const HIST = [
+  { d: '22 เม.ย. 08:24', p: 'A1 - ต้นที่ 3', sc: 'k', r: 'ขาดโพแทสเซียม (K)', c: 82, st: 'ควรดำเนินการ', tone: 'red' },
+  { d: '21 เม.ย. 16:05', p: 'B1 - ต้นที่ 7', sc: 'healthy', r: 'Healthy (ปกติ)', c: 91, st: 'ปกติ', tone: 'green' },
+  { d: '21 เม.ย. 10:12', p: 'A2 - ต้นที่ 1', sc: 'spot', r: 'โรคใบจุด', c: 87, st: 'ควรดำเนินการ', tone: 'red' },
+  { d: '20 เม.ย. 14:33', p: 'C1 - ต้นที่ 5', sc: 'hole', r: 'หนอนเจาะใบ', c: 76, st: 'เฝ้าระวัง', tone: 'orange' },
+  { d: '19 เม.ย. 09:18', p: 'B2 - ต้นที่ 2', sc: 'healthy', r: 'Healthy (ปกติ)', c: 88, st: 'ปกติ', tone: 'green' }
+];
+const RECS = [
+  { icon: 'leaf', tone: 'green', t: 'ใส่ปุ๋ยโพแทสเซียม (K)', d: 'แนะนำสูตร 0-0-60 หรือ 13-0-46 อัตรา 1-2 กก./ต้น', b: 'ทำเลย', act: 'fert' },
+  { icon: 'droplets', tone: 'orange', t: 'ตรวจสอบระบบน้ำ', d: 'รักษาความชื้นในดินให้เหมาะสม', b: 'ดูรายละเอียด', href: 'integrations.html' },
+  { icon: 'search', tone: 'blue', t: 'ติดตามอาการใน 3-5 วัน', d: 'ถ่ายภาพใบอีกครั้งเพื่อติดตามผล', b: 'ตั้งเตือน', act: 'remind' },
+  { icon: 'bug', tone: 'red', t: 'เฝ้าระวังโรคใบจุด', d: 'โดยเฉพาะในช่วงที่มีความชื้นสูง', b: 'ดูคำแนะนำ', href: 'pest-management.html' }
+];
+
+/* ===== Render ===== */
+UI.mountKpis('#kpis', KPIS);
+$('#origBox .chip-on-img').innerHTML = `${ic('image', 'w-3.5 h-3.5')} ภาพต้นฉบับ`; $('#origBox .chip-on-img').classList.add('flex', 'items-center', 'gap-1');
+function setImage(src) {
+  const html = src ? `<img src="${src}" alt="ภาพที่อัปโหลด" class="w-full h-full object-cover">` : scene('leaf', 'h-full !rounded-none', 'k');
+  $('#orig').innerHTML = html; $('#aiImg').innerHTML = html;
+  $('#heat').innerHTML = [[45, 40, 30, 26], [18, 66, 24, 20], [62, 56, 18, 16]].map(b => `<div class="heat" style="left:${b[1]}%;top:${b[0]}%;width:${b[2]}%;height:${b[3]}%"></div>`).join('');
+}
+function renderResult(r, pending = false) {
+  $('#result').innerHTML = pending ? `<div class="h-full grid place-items-center text-center muted"><div>${ic('loader-circle', 'w-8 h-8 animate-spin mx-auto text-green-600')}<p class="mt-2">กำลังวิเคราะห์ภาพ...</p><p class="text-[11.5px]">ตรวจคุณภาพภาพ → จำแนก → จัดลำดับสมมติฐาน</p></div></div>` : `
+  <div class="flex items-center justify-between"><span class="text-[13px] font-medium flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-green-500 inline-block"></i>ผลการวิเคราะห์</span><span class="bdg t-red">พบความผิดปกติ</span></div>
+  <div class="rounded-xl bg-red-50 dark:bg-red-500/10 p-3 mt-2 flex gap-3"><span class="ib ib-sm bg-white dark:bg-transparent text-red-600">${ic('leaf')}</span><div><b class="text-red-600">${r.title}</b><p class="text-[12px] muted mt-0.5">${r.desc}</p></div></div>
+  <div class="flex justify-between text-[12.5px] mt-3"><span>ความมั่นใจของโมเดล (Model Confidence)</span><b>${r.conf}%</b></div>
+  <div class="pg mt-1 !h-2.5"><i style="width:${r.conf}%;background:#2e8b47"></i></div>
+  <div class="text-[13px] font-medium mt-3">ความน่าจะเป็นของสาเหตุ</div>
+  <ul class="mt-2 space-y-2">${r.causes.map(c => `<li class="flex items-center gap-2 text-[12.5px]"><span style="color:${c.c}">${ic(c.icon, 'w-4 h-4')}</span><span class="w-[150px] truncate">${c.n}</span><div class="pg flex-1"><i style="width:${c.p}%;background:${c.c}"></i></div><b class="w-9 text-right" style="color:${c.p > 50 ? c.c : ''}">${c.p}%</b></li>`).join('')}</ul>
+  <div class="flex gap-2 mt-3"><button class="btn btn-sm btn-soft-green" id="confirmAI">${ic('user-check')}ผู้เชี่ยวชาญยืนยัน</button><button class="btn btn-sm" id="rejectAI">${ic('pencil')}แก้ไขผล</button></div>`;
+  UI.icons();
+}
+setImage(); renderResult(RESULT);
+$('#fruitMain').innerHTML = scene('durian', 'h-full');
+$('#fruitThumbs').innerHTML = [1, 2, 3, 4].map(() => scene('durian', 'h-full !rounded-md')).join('');
+$('#fruitChecks').innerHTML = FRUIT_CHECKS.map(c => `<li class="flex items-center gap-2">${ic('circle-check', 'w-4 h-4 text-green-600')}<span class="flex-1">${c[0]}</span>${UI.badge(c[1], c[2])}</li>`).join('');
+$('#anoms').innerHTML = ANOMS.map(a => `<div class="rounded-xl border bline overflow-hidden"><div class="h-[90px]">${scene('leaf', 'h-full !rounded-none', a.sc)}</div><div class="p-2 text-[12px]"><b class="flex items-center gap-1 ${a.tone === 'red' ? 'text-red-600' : a.tone === 'orange' ? 'text-orange-600' : 'text-green-600'}">${ic(a.icon, 'w-3.5 h-3.5')}${a.n}</b><div class="muted">${a.sub}</div></div></div>`).join('');
+$('#insights').innerHTML = INSIGHTS.map(i => `<div class="rounded-xl p-3 ${i.bg} flex gap-3"><span class="ib ib-sm bg-white dark:bg-transparent t-${i.tone}">${ic(i.icon)}</span><div><div class="text-[12.5px] font-medium">${i.t}</div><div class="text-[18px] font-bold ${i.vc}">${i.v}</div><p class="text-[11.5px] muted mt-1 leading-4">${i.d}</p></div></div>`).join('');
+Charts.make('riskChart', { type: 'line', data: { labels: RISK.labels, datasets: RISK.s.map(s => ({ label: s.n, data: s.v, borderColor: s.c, backgroundColor: s.c, tension: .3, pointRadius: 4 })) },
+  options: { scales: { y: { min: 0, max: 100, ticks: { stepSize: 25 }, title: { display: true, text: 'ความเสี่ยง (%)' } }, x: { grid: { display: false } } } } });
+$('#histBody').innerHTML = HIST.map(h => `<tr><td class="whitespace-nowrap">${h.d}</td><td class="whitespace-nowrap">${h.p}</td><td><div class="w-9 h-7">${scene('leaf', 'h-full !rounded-md', h.sc)}</div></td><td>${h.r}</td><td>${h.c}%</td><td>${UI.badge(h.st, h.tone)}</td></tr>`).join('');
+$('#recs').innerHTML = RECS.map((r, i) => `<li class="flex items-center gap-3 rounded-xl border bline p-2.5"><span class="w-7 h-7 rounded-full grid place-items-center bg-[var(--soft)] font-semibold text-[13px]">${i + 1}</span><span class="ib ib-sm t-${r.tone}">${ic(r.icon)}</span><div class="flex-1 min-w-0"><b class="text-[13.5px]">${r.t}</b><div class="text-[12px] muted">${r.d}</div></div>
+  ${r.href ? `<a href="${r.href}" class="btn btn-sm btn-soft-green">${r.b}</a>` : `<button class="btn btn-sm btn-soft-green" data-act="${r.act}">${r.b}</button>`}</li>`).join('');
+
+/* ===== Upload (client-side preview; production: POST multipart + MIME/magic check + consent) ===== */
+function handleFile(f) {
+  if (!f) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { UI.toast('รองรับเฉพาะ JPG / PNG / WEBP', 'triangle-alert'); return; }
+  if (f.size > 10 * 1024 * 1024) { UI.toast('ไฟล์ใหญ่เกิน 10 MB', 'triangle-alert'); return; }
+  const rd = new FileReader();
+  rd.onload = () => { setImage(rd.result); renderResult(null, true); setTimeout(() => renderResult(RESULT), 1400); };
+  rd.readAsDataURL(f);
+}
+$('#btnUpload').onclick = () => UI.modal({ title: 'ยินยอมส่งภาพให้ AI วิเคราะห์ (PDPA)', saveText: 'ยินยอมและเลือกภาพ', size: 'max-w-[520px]',
+  body: `<p class="text-[13.5px]">ภาพและพิกัด GPS (ถ้ามี) จะถูกส่งไปยังผู้ให้บริการ AI ผ่านเซิร์ฟเวอร์ของระบบเพื่อวิเคราะห์ ตามนโยบายความเป็นส่วนตัวและระยะเวลาการเก็บรักษาข้อมูล</p><label class="flex items-center gap-2 mt-3 text-[13px]"><input type="checkbox" name="gps"> แนบพิกัด GPS ของภาพ</label>`,
+  onSave: () => setTimeout(() => $('#file').click(), 50) });
+$('#btnCamera').onclick = () => $('#cam').click();
+$('#file').onchange = e => { handleFile(e.target.files[0]); e.target.value = ''; };
+$('#cam').onchange = e => { handleFile(e.target.files[0]); e.target.value = ''; };
+$('#zoomAi').onclick = () => { const b = $('#aiBox'); if (document.fullscreenElement) document.exitFullscreen(); else b.requestFullscreen && b.requestFullscreen(); };
+$('#otherFruit').onclick = () => { $('#fruitMain').innerHTML = scene('orchard', 'h-full', Math.ceil(Math.random() * 9)); UI.toast('สลับตัวอย่างภาพผล'); };
+$('#treeSel').onchange = e => UI.toast(`โหลดภาพล่าสุดของ ${e.target.value}`);
+document.addEventListener('click', e => {
+  if (e.target.closest('#confirmAI')) UI.formModal('ผู้เชี่ยวชาญยืนยันผล AI', [{ n: 'diag', l: 'ผลที่ยืนยัน', t: 'select', o: RESULT.causes.map(c => c.n).concat(['ไม่ใช่ทั้งหมด / ต้องตรวจแล็บ']) }, { n: 'note', l: 'ความเห็น', t: 'textarea', full: true }], { api: 'POST /api/v1/ai/predictions/{id}/review' });
+  if (e.target.closest('#rejectAI')) UI.formModal('แก้ไขผลวิเคราะห์ (Expert correction)', [{ n: 'label', l: 'ผลที่ถูกต้อง', req: true }, { n: 'reason', l: 'เหตุผลที่ AI ผิด', t: 'textarea', full: true }], { api: 'POST /api/v1/ai/feedback' });
+  const a = e.target.closest('[data-act]');
+  if (a && a.dataset.act === 'fert') location.href = 'fertilizer-plans.html#create';
+  if (a && a.dataset.act === 'remind') UI.formModal('ตั้งเตือนติดตามอาการ', [{ n: 'date', l: 'วันที่เตือน', t: 'date', v: '2025-04-26', req: true }, { n: 'ch', l: 'ช่องทาง', t: 'select', o: ['ในระบบ', 'LINE Messaging API', 'Telegram', 'Email'] }], { api: 'POST /api/v1/tasks (draft)' });
+});
+$('#btnPlan').onclick = () => UI.modal({ title: 'สร้างแผนปฏิบัติการจากคำแนะนำ AI', saveText: 'ส่งขออนุมัติ', body: `<p class="text-[13px] muted mb-3">เลือกรายการที่จะสร้างเป็น "งานฉบับร่าง" (ต้องได้รับอนุมัติก่อนเป็นใบงาน)</p>${RECS.map((r, i) => `<label class="flex items-center gap-3 py-2 border-b bline"><input type="checkbox" name="r${i}" checked><span class="flex-1"><b>${r.t}</b><br><span class="text-[12px] muted">${r.d}</span></span></label>`).join('')}`, onSave: () => UI.toast('สร้างงานฉบับร่าง 4 รายการ — รอผู้จัดการ/นักวิชาการอนุมัติ') });
+UI.icons();
+</script>
+</body>
+</html>

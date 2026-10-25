@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>จัดการสวนและแปลง | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="farms" data-loc="เชียงใหม่" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <nav class="text-[13px] muted flex items-center gap-1.5"><a href="dashboard.html" aria-label="หน้าหลัก"><i data-lucide="house" class="w-4 h-4"></i></a><span>/</span><span>สวน/แปลง</span></nav>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">จัดการสวนและแปลง</h1>
+        <p class="muted mt-1 text-[15px]">จัดการข้อมูลสวน แปลง พื้นที่เพาะปลูก และติดตามสถานะการเพาะปลูกแบบครบวงจร</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <select class="sel w-auto" id="fFarm"><option value="">ทุกสวน</option></select>
+        <select class="sel w-auto" id="fCrop"><option value="">ทุกพืช</option><option>ทุเรียน</option><option>มังคุด</option><option>มะม่วง</option><option>เงาะ</option><option>ลำไย</option></select>
+        <select class="sel w-auto" id="fStatus"><option value="">ทุกสถานะ</option><option>สมบูรณ์ดี</option><option>กำลังเติบโต</option><option>ปลูกใหม่</option></select>
+        <button class="btn btn-green" data-form="farm"><i data-lucide="plus"></i>เพิ่มสวน</button>
+        <button class="btn" data-form="plot"><i data-lucide="plus"></i>เพิ่มแปลง</button>
+      </div>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4"></section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <!-- Farm list -->
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">รายการสวนของฉัน</h2><button class="btn btn-green btn-sm" data-form="farm"><i data-lucide="plus"></i>เพิ่มสวน</button></div>
+        <div id="farmList" class="space-y-3"></div>
+      </div>
+      <!-- Map -->
+      <div class="card card-pad col-span-12 lg:col-span-6 2xl:col-span-4" id="mapCard">
+        <div class="card-h"><h2 class="card-t" id="mapTitle">แผนที่สวนและแปลง (สวนบ้านป่าเหมือด)</h2>
+          <select class="sel sel-sm" id="mapPlotSel"><option value="">ดูแปลงทั้งหมด</option></select></div>
+        <div class="relative h-[340px]">
+          <div id="map" class="map"></div>
+          <div class="absolute top-3 right-3 z-[500] flex rounded-lg overflow-hidden shadow bg-white text-[12.5px]" id="baseSw">
+            <button data-base="osm" class="px-3 py-1.5 flex items-center gap-1 text-gray-700"><i data-lucide="map" class="w-4 h-4"></i>แผนที่</button>
+            <button data-base="sat" class="px-3 py-1.5 flex items-center gap-1 bg-[#1f7a3a] text-white"><i data-lucide="satellite" class="w-4 h-4"></i>ดาวเทียม</button>
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center justify-between gap-2 mt-3 text-[12px]">
+          <div id="mapLegend" class="flex flex-wrap gap-x-3 gap-y-1"></div>
+          <span class="muted flex items-center gap-1"><span class="inline-block w-20 h-1.5 border-x border-b border-gray-500"></span>0 &nbsp;50 &nbsp;100 &nbsp;200 เมตร</span>
+        </div>
+      </div>
+      <!-- Plot table -->
+      <div class="card card-pad col-span-12 2xl:col-span-5">
+        <div class="card-h"><h2 class="card-t" id="plotTitle">รายการแปลง (สวนบ้านป่าเหมือด)</h2>
+          <button class="lnk" data-toast="เลือกคอลัมน์ที่ต้องการแสดง (บันทึกใน user preference)"><i data-lucide="columns-3"></i>จัดการคอลัมน์<i data-lucide="chevron-down"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th>รหัสแปลง</th><th>พืชที่ปลูก</th><th class="num">พื้นที่ (ไร่)</th><th class="num">จำนวนต้น</th><th>อายุเฉลี่ย</th><th>สถานะ</th><th>จัดการ</th></tr></thead>
+          <tbody id="plotBody"></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-3">
+        <h2 class="card-t mb-3">สัดส่วนพื้นที่ปลูกตามชนิดพืช</h2>
+        <div class="flex flex-col sm:flex-row 2xl:flex-col items-center gap-4">
+          <div class="relative flex items-center justify-center h-[160px] w-[160px] shrink-0"><canvas id="areaChart" class="max-w-full"></canvas>
+            <div class="absolute inset-0 grid place-items-center pointer-events-none text-center"><div><div class="text-[26px] font-bold leading-none">86.5</div><div class="text-[13px]">ไร่</div><div class="text-[11px] muted">พื้นที่ทั้งหมด</div></div></div></div>
+          <ul id="areaLegend" class="space-y-2 text-[12.5px] w-full whitespace-nowrap"></ul>
+        </div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-3">
+        <h2 class="card-t mb-3">จำนวนต้นไม้ตามชนิดพืช</h2>
+        <div class="relative flex items-center justify-center h-[250px]"><canvas id="treeChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">กิจกรรมล่าสุดในสวน</h2><a href="calendar.html" class="lnk">ดูทั้งหมด<i data-lucide="arrow-right"></i></a></div>
+        <div id="actList" class="divide-line"></div>
+      </div>
+      <div class="card card-pad col-span-12 md:col-span-6 2xl:col-span-3">
+        <h2 class="card-t mb-3">เครื่องมือด่วน</h2>
+        <div class="grid grid-cols-2 gap-3" id="quick"></div>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<input type="file" id="importFile" accept=".csv,.xlsx" class="hidden">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/farms , /api/v1/plots?farm_id= ===== */
+const DATA = {
+  kpis: [
+    { icon: 'tree-deciduous', tone: 'green', label: 'จำนวนสวนทั้งหมด', value: '3', unit: 'สวน', foot: '+1 จากเดือนที่แล้ว', footIcon: 'triangle', footTone: 'green-600' },
+    { icon: 'map', tone: 'teal', label: 'จำนวนแปลงทั้งหมด', value: '12', unit: 'แปลง', foot: '+2 จากเดือนที่แล้ว', footIcon: 'triangle', footTone: 'green-600' },
+    { icon: 'sprout', tone: 'green', label: 'พื้นที่รวมทั้งหมด', value: '86.5', unit: 'ไร่', foot: '+5.2 ไร่ (+6%)', footIcon: 'triangle', footTone: 'green-600' },
+    { icon: 'trees', tone: 'green', label: 'จำนวนต้นไม้ทั้งหมด', value: '2,842', unit: 'ต้น', foot: '+156 ต้น (+6%)', footIcon: 'triangle', footTone: 'green-600' },
+    { icon: 'apple', tone: 'red', label: 'ชนิดพืชที่ปลูก', value: '5', unit: 'ชนิด', foot: 'ทุเรียน มังคุด มะม่วง เงาะ ลำไย' },
+    { icon: 'clipboard-check', tone: 'orange', label: 'แปลงที่กำลังเติบโตดี', value: '10', unit: 'แปลง', foot: 'คิดเป็น 83%' }
+  ],
+  farms: [
+    { id: 1, name: 'สวนบ้านป่าเหมือด', addr: 'อ.แม่ริม จ.เชียงใหม่', plots: 5, rai: '32.5', st: 'ใช้งาน', seed: 1 },
+    { id: 2, name: 'สวนแม่สา', addr: 'อ.แม่แตง จ.เชียงใหม่', plots: 4, rai: '28.0', st: 'ใช้งาน', seed: 2 },
+    { id: 3, name: 'สวนดอยสะเก็ด', addr: 'อ.ดอยสะเก็ด จ.เชียงใหม่', plots: 3, rai: '26.0', st: 'ใช้งาน', seed: 3 }
+  ],
+  plots: {
+    1: [
+      { code: 'A1', crop: 'durian', rai: 12.0, trees: 420, age: 5, st: 'สมบูรณ์ดี' }, { code: 'A2', crop: 'mangosteen', rai: 9.5, trees: 280, age: 4, st: 'สมบูรณ์ดี' },
+      { code: 'B1', crop: 'mango', rai: 8.0, trees: 320, age: 3, st: 'กำลังเติบโต' }, { code: 'B2', crop: 'durian', rai: 7.5, trees: 260, age: 4, st: 'สมบูรณ์ดี' },
+      { code: 'C1', crop: 'rambutan', rai: 9.0, trees: 310, age: 3, st: 'สมบูรณ์ดี' }, { code: 'C2', crop: 'longan', rai: 6.5, trees: 200, age: 5, st: 'ปลูกใหม่' }
+    ],
+    2: [
+      { code: 'A1', crop: 'durian', rai: 9.0, trees: 260, age: 6, st: 'สมบูรณ์ดี' }, { code: 'A2', crop: 'durian', rai: 7.0, trees: 210, age: 4, st: 'สมบูรณ์ดี' },
+      { code: 'B1', crop: 'longan', rai: 6.5, trees: 190, age: 7, st: 'สมบูรณ์ดี' }, { code: 'B2', crop: 'mango', rai: 5.5, trees: 150, age: 2, st: 'กำลังเติบโต' }
+    ],
+    3: [
+      { code: 'A1', crop: 'longan', rai: 10.0, trees: 300, age: 8, st: 'สมบูรณ์ดี' }, { code: 'A2', crop: 'mangosteen', rai: 8.0, trees: 140, age: 3, st: 'กำลังเติบโต' },
+      { code: 'B1', crop: 'rambutan', rai: 8.0, trees: 120, age: 1, st: 'ปลูกใหม่' }
+    ]
+  },
+  area: [{ k: 'durian', rai: 19.5, p: 23 }, { k: 'mangosteen', rai: 9.5, p: 11 }, { k: 'mango', rai: 8.0, p: 9 }, { k: 'rambutan', rai: 9.0, p: 10 }, { k: 'longan', rai: 6.5, p: 8 }, { k: 'other', rai: 34.0, p: 39 }],
+  treeCount: [{ k: 'durian', n: 680 }, { k: 'mangosteen', n: 420 }, { k: 'mango', n: 320 }, { k: 'rambutan', n: 310 }, { k: 'longan', n: 200 }],
+  acts: [
+    { icon: 'sprout', tone: 'green', t: 'ใส่ปุ๋ย สูตร 15-15-15', p: 'แปลง A1 (ทุเรียน)', d: '22 เม.ย. 2568 09:15', seed: 4 },
+    { icon: 'bug', tone: 'red', t: 'ตรวจโรคแมลง', p: 'แปลง B1 (มะม่วง)', d: '21 เม.ย. 2568 16:30', seed: 5 },
+    { icon: 'droplets', tone: 'blue', t: 'ให้น้ำระบบสปริงเกอร์', p: 'แปลง C1 (เงาะ)', d: '20 เม.ย. 2568 08:20', seed: 6 }
+  ],
+  quick: [
+    { icon: 'tree-deciduous', t: 'เพิ่มสวน', tone: 'green', form: 'farm' }, { icon: 'map', t: 'เพิ่มแปลง', tone: 'green', form: 'plot' },
+    { icon: 'upload', t: 'นำเข้าข้อมูล<br>(Excel)', tone: 'blue', act: 'import' }, { icon: 'chart-column', t: 'รายงานสวน<br>และแปลง', tone: 'orange', href: 'reports.html' },
+    { icon: 'leaf', t: 'จัดการพืช', tone: 'green', href: 'trees.html' }, { icon: 'settings', t: 'ตั้งค่าพื้นที่', tone: 'gray', href: 'settings.html' }
+  ]
+};
+const STATUS_TONE = { 'สมบูรณ์ดี': 'green', 'กำลังเติบโต': 'orange', 'ปลูกใหม่': 'blue' };
+let curFarm = 1, map = null;
+
+UI.mountKpis('#kpis', DATA.kpis);
+$('#fFarm').innerHTML += DATA.farms.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+
+function renderFarms() {
+  $('#farmList').innerHTML = DATA.farms.map(f => `<button class="w-full text-left flex gap-3 items-center p-2.5 rounded-xl border ${f.id === curFarm ? 'border-[#52ab66] bg-[#f3faf4] dark:bg-green-500/10' : 'bline'} hover:shadow-sm transition" data-farm="${f.id}">
+    ${scene('orchard', 'w-[92px] h-[66px] shrink-0', f.seed)}
+    <div class="flex-1 min-w-0"><div class="flex items-center justify-between gap-2"><b class="text-[15px]">${esc(f.name)}</b>${UI.badge(f.st, 'green')}</div>
+    <div class="text-[12.5px] muted">${esc(f.addr)}</div>
+    <div class="text-[12.5px] muted mt-1 flex gap-3"><span class="flex items-center gap-1">${ic('file-text', 'w-3.5 h-3.5')}${f.plots} แปลง</span><span class="flex items-center gap-1">${ic('grid-2x2', 'w-3.5 h-3.5')}${f.rai} ไร่</span></div></div>
+    ${ic('chevron-right', 'w-4 h-4 muted')}</button>`).join('');
+}
+function currentPlots() {
+  const crop = $('#fCrop').value, st = $('#fStatus').value;
+  return DATA.plots[curFarm].filter(p => (!crop || FRUIT[p.crop].th === crop) && (!st || p.st === st));
+}
+function renderPlots() {
+  const f = DATA.farms.find(x => x.id === curFarm);
+  $('#mapTitle').textContent = `แผนที่สวนและแปลง (${f.name})`; $('#plotTitle').textContent = `รายการแปลง (${f.name})`;
+  const rows = currentPlots();
+  $('#plotBody').innerHTML = rows.length ? rows.map(p => `<tr><td><b>${p.code}</b></td><td><span class="flex items-center gap-2">${fruitSvg(p.crop, 24)}${FRUIT[p.crop].th}</span></td><td class="num">${p.rai.toFixed(1)}</td><td class="num">${nf(p.trees)}</td><td>${p.age} ปี</td><td>${UI.badge(p.st, STATUS_TONE[p.st], true)}</td>
+    <td><button class="btn btn-sm !border-0" data-menu="${p.code}" aria-label="จัดการแปลง ${p.code}">${ic('ellipsis')}</button></td></tr>`).join('')
+    : `<tr><td colspan="7" class="text-center muted py-8">ไม่พบแปลงตามเงื่อนไขที่เลือก</td></tr>`;
+  $('#mapPlotSel').innerHTML = '<option value="">ดูแปลงทั้งหมด</option>' + DATA.plots[curFarm].map(p => `<option>${p.code}</option>`).join('');
+  drawMap(); UI.icons();
+}
+function drawMap() {
+  if (map) { map.remove(); map = null; }
+  const ok = new Set(currentPlots().map(p => p.code));
+  map = Maps.farm('map', DATA.plots[curFarm].map(p => ({ code: p.code, crop: p.crop, color: FRUIT[p.crop].color, l1: FRUIT[p.crop].th, l2: p.rai.toFixed(1) + ' ไร่', pin: p.code === 'A1', opacity: ok.has(p.code) ? .45 : .06,
+    popup: `<b>แปลง ${p.code}</b> — ${FRUIT[p.crop].th}<br>${p.rai} ไร่ · ${nf(p.trees)} ต้น · อายุเฉลี่ย ${p.age} ปี` })), { dash: true });
+  $$('#baseSw [data-base]').forEach(b => { const on = b.dataset.base === 'sat'; b.className = `px-3 py-1.5 flex items-center gap-1 ${on ? 'bg-[#1f7a3a] text-white' : 'text-gray-700'}`; });
+}
+renderFarms(); renderPlots();
+$('#mapLegend').innerHTML = ['durian', 'mangosteen', 'mango', 'rambutan', 'longan'].map(k => `<span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block" style="background:${FRUIT[k].color}"></i>${FRUIT[k].th}</span>`).join('') + `<span class="flex items-center gap-1.5"><i class="w-2.5 h-2.5 rounded-full inline-block bg-[#c9a77c]"></i>แปลงว่าง</span>`;
+
+$('#farmList').addEventListener('click', e => { const b = e.target.closest('[data-farm]'); if (!b) return; curFarm = +b.dataset.farm; $('#fFarm').value = curFarm; renderFarms(); renderPlots(); });
+$('#fFarm').onchange = e => { if (e.target.value) { curFarm = +e.target.value; renderFarms(); } renderPlots(); };
+$('#fCrop').onchange = renderPlots; $('#fStatus').onchange = renderPlots;
+$('#mapPlotSel').onchange = e => { if (!map) return; map._group.eachLayer(l => { if (l._meta && (l._meta.code === e.target.value)) { map.fitBounds(l.getBounds(), { padding: [40, 40] }); l.openPopup(); } }); if (!e.target.value) map.fitBounds(map._group.getBounds(), { padding: [14, 14] }); };
+$('#baseSw').addEventListener('click', e => { const b = e.target.closest('[data-base]'); if (!b) return; Maps.setBase(map, b.dataset.base); $$('#baseSw [data-base]').forEach(x => { const on = x === b; x.className = `px-3 py-1.5 flex items-center gap-1 ${on ? 'bg-[#1f7a3a] text-white' : 'text-gray-700'}`; }); UI.icons(); });
+$('#plotBody').addEventListener('click', e => {
+  const m = e.target.closest('[data-menu]'); if (!m) return; e.stopPropagation();
+  const p = DATA.plots[curFarm].find(x => x.code === m.dataset.menu);
+  UI.menu(m, [
+    { t: 'ดูการเติบโต', icon: 'trending-up', href: 'growth-monitoring.html' },
+    { t: 'ดูต้นไม้ในแปลง', icon: 'trees', href: 'trees.html' },
+    { t: 'แก้ไขแปลง', icon: 'pencil', onClick: () => FORMS.plot(p) },
+    { t: 'ปิดใช้งานแปลง', icon: 'archive', danger: true, onClick: () => UI.toast(`ส่งคำขอปิดใช้งานแปลง ${p.code} (soft delete + audit log)`) }
+  ]);
+});
+
+// Charts
+const areaColors = DATA.area.map(a => a.k === 'other' ? '#d5dbd6' : FRUIT[a.k].color);
+Charts.make('areaChart', { type: 'doughnut', data: { labels: DATA.area.map(a => a.k === 'other' ? 'พื้นที่อื่น' : FRUIT[a.k].th), datasets: [{ data: DATA.area.map(a => a.rai), backgroundColor: areaColors, borderWidth: 2, borderColor: 'transparent' }] }, options: { cutout: '64%', plugins: { legend: { display: false } } } });
+$('#areaLegend').innerHTML = DATA.area.map((a, i) => `<li class="flex items-center justify-between gap-2"><span class="flex items-center gap-2"><i class="w-3 h-3 rounded-full inline-block" style="background:${areaColors[i]}"></i>${a.k === 'other' ? 'พื้นที่อื่น' : FRUIT[a.k].th}</span><span class="muted">${a.rai.toFixed(1)} ไร่ (${a.p}%)</span></li>`).join('');
+Charts.make('treeChart', { type: 'bar', data: { labels: DATA.treeCount.map(t => FRUIT[t.k].th), datasets: [{ label: 'จำนวนต้น', data: DATA.treeCount.map(t => t.n), backgroundColor: DATA.treeCount.map(t => t.k === 'longan' ? '#c8955f' : FRUIT[t.k].color), borderRadius: 6, maxBarThickness: 46 }] },
+  options: { layout: { padding: { top: 18 } }, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 1000, ticks: { stepSize: 200 } }, x: { grid: { display: false } } } }, plugins: [Charts.valueLabels] });
+
+$('#actList').innerHTML = DATA.acts.map(a => `<div class="flex gap-3 py-2.5 items-center">${scene('orchard', 'w-[70px] h-[50px] shrink-0', a.seed)}<span class="ib ib-xs t-${a.tone}">${ic(a.icon)}</span><div class="min-w-0"><b class="text-[13.5px] block">${a.t}</b><span class="text-[12px] muted block">${a.p}</span><span class="text-[12px] muted block">${a.d}</span></div></div>`).join('');
+$('#quick').innerHTML = DATA.quick.map(q => {
+  const attr = q.form ? `data-form="${q.form}"` : q.act ? `data-act="${q.act}"` : '';
+  const inner = `<span class="ib ib-sm t-${q.tone} mx-auto">${ic(q.icon)}</span><span class="text-[12.5px] font-medium leading-4 mt-1.5 block text-center">${q.t}</span>`;
+  return q.href ? `<a href="${q.href}" class="rounded-xl p-3 t-${q.tone} !bg-opacity-60 flex flex-col items-center hover:shadow-md transition">${inner}</a>` : `<button ${attr} class="rounded-xl p-3 t-${q.tone} flex flex-col items-center hover:shadow-md transition">${inner}</button>`;
+}).join('');
+document.addEventListener('click', e => { if (e.target.closest('[data-act="import"]')) $('#importFile').click(); });
+$('#importFile').onchange = e => { const f = e.target.files[0]; if (f) UI.toast(`ตรวจสอบไฟล์ ${f.name} (dry-run) ก่อนนำเข้า — POST /api/v1/import/plots`); e.target.value = ''; };
+
+/* ===== Forms (POST /api/v1/farms , /api/v1/plots) ===== */
+window.FORMS = {
+  farm: () => UI.formModal('เพิ่มสวน', [
+    { n: 'name', l: 'ชื่อสวน', req: true, ph: 'เช่น สวนบ้านป่าเหมือด' }, { n: 'type', l: 'ประเภท', t: 'select', o: ['สวนผลไม้', 'สวนผสม', 'แปลงทดลอง'] },
+    { n: 'province', l: 'จังหวัด', req: true }, { n: 'amphoe', l: 'อำเภอ' }, { n: 'tambon', l: 'ตำบล' }, { n: 'gap', l: 'เลขที่ใบรับรอง GAP' },
+    { n: 'lat', l: 'ละติจูด', t: 'number', ph: '18.9' }, { n: 'lng', l: 'ลองจิจูด', t: 'number', ph: '98.9' }, { n: 'note', l: 'แหล่งน้ำ / หมายเหตุ', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/farms' }),
+  plot: (p = {}) => UI.formModal(p.code ? `แก้ไขแปลง ${p.code}` : 'เพิ่มแปลง', [
+    { n: 'farm', l: 'สวน', t: 'select', o: DATA.farms.map(f => f.name), v: DATA.farms.find(f => f.id === curFarm).name, req: true },
+    { n: 'code', l: 'รหัสแปลง', req: true, v: p.code || '' }, { n: 'crop', l: 'พืชที่ปลูก', t: 'select', o: Object.values(FRUIT).map(f => f.th), v: p.crop ? FRUIT[p.crop].th : '' },
+    { n: 'area', l: 'พื้นที่ (ไร่)', t: 'number', v: p.rai || '', req: true }, { n: 'soil', l: 'ชนิดดิน', t: 'select', o: ['ดินร่วน', 'ดินร่วนปนทราย', 'ดินเหนียว', 'ดินร่วนเหนียว', 'ดินทราย'] },
+    { n: 'status', l: 'สถานะ', t: 'select', o: ['สมบูรณ์ดี', 'กำลังเติบโต', 'ปลูกใหม่'], v: p.st || '' }, { n: 'polygon', l: 'ขอบเขตแปลง (GeoJSON)', t: 'textarea', full: true, ph: '{"type":"Polygon","coordinates":[...]}' }
+  ], { api: p.code ? 'PATCH /api/v1/plots/{id}' : 'POST /api/v1/plots' })
+};
+Charts.make && UI.icons();
+</script>
+</body>
+</html>

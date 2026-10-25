@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ศูนย์เชื่อมต่อ IoT / API | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="iot" data-loc="อ.เมืองจันทบุรี" data-search="ค้นหาสวน แปลง ต้นไม้ หรืออุปกรณ์...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <nav class="text-[13px] muted flex items-center gap-1.5"><a href="dashboard.html" aria-label="หน้าหลัก"><i data-lucide="house" class="w-4 h-4"></i></a><a href="dashboard.html" class="hover:underline">หน้าหลัก</a><span>/</span><span>IoT</span><span>/</span><span>API</span></nav>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">ศูนย์เชื่อมต่อ IoT / API</h1>
+        <p class="muted mt-1 text-[15px]">จัดการอุปกรณ์ IoT, เชื่อมต่อ API, รับส่งข้อมูล และติดตามสถานะการทำงานแบบเรียลไทม์</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn btn-green" data-form="device"><i data-lucide="plus"></i>เพิ่มอุปกรณ์</button>
+        <button class="btn" data-form="api"><i data-lucide="link"></i>เชื่อมต่อ API ภายนอก</button>
+        <button class="btn" data-form="webhook"><i data-lucide="share"></i>ตั้งค่า Webhook</button>
+        <button class="btn" id="btnMore"><i data-lucide="ellipsis-vertical"></i>เพิ่มเติม<i data-lucide="chevron-down"></i></button>
+      </div>
+    </div>
+
+    <section id="kpis" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4"></section>
+
+    <section class="card card-pad">
+      <div class="card-h flex-wrap">
+        <div class="flex flex-wrap items-center gap-3"><h2 class="card-t">อุปกรณ์ IoT ของสวน</h2>
+          <div class="tabs" id="devTabs"><button class="tab on" data-tab="all"><i class="inline-block w-2 h-2 rounded-full bg-white/80 mr-1"></i>ทั้งหมด 12</button><button class="tab" data-tab="on"><i class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></i>ออนไลน์ 9</button><button class="tab" data-tab="off"><i class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></i>ออฟไลน์ 3</button></div>
+          <select class="sel sel-sm" id="devFarm"><option>ทุกสวน/ทุกแปลง</option><option>แปลง A1</option><option>แปลง A2</option><option>สวนหลัก</option></select></div>
+        <button class="lnk" data-toast="จัดการอุปกรณ์ทั้งหมด (iot_devices + sensor_calibrations)"><i data-lucide="sliders-horizontal"></i>จัดการอุปกรณ์</button>
+      </div>
+      <div id="devices" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-3"></div>
+      <p class="mt-3"><span class="trust"><i data-lucide="info" class="w-3 h-3"></i>ค่าที่แสดงเป็นข้อมูลตัวอย่าง — ระบบจริงแสดง "ข้อมูลล่าสุดเมื่อ..." และไม่อ้างว่าเรียลไทม์หากข้อมูลค้าง (stale)</span></p>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4 items-start">
+      <div class="card card-pad col-span-12 xl:col-span-5">
+        <div class="card-h flex-wrap"><h2 class="card-t">กราฟแนวโน้มข้อมูลจากอุปกรณ์</h2><div class="flex gap-2"><select class="sel sel-sm" id="sensorSel"><option>Soil Sensor A1</option><option>Weather API</option></select><select class="sel sel-sm" id="daysSel"><option value="7">7 วันย้อนหลัง</option><option value="3">3 วันย้อนหลัง</option></select></div></div>
+        <div class="relative flex items-center justify-center h-[260px]"><canvas id="sensorChart" class="max-w-full"></canvas></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-7 xl:col-span-4">
+        <h2 class="card-t mb-3">ภาพจากกล้อง (แปลงทุเรียน A1)</h2>
+        <div class="relative h-[200px] rounded-xl overflow-hidden" id="camBox">
+          <div id="camMain" class="h-full"></div>
+          <span class="chip-on-img top-2 left-2 !bg-red-600 flex items-center gap-1"><i class="w-2 h-2 rounded-full bg-white inline-block animate-pulse"></i>LIVE</span>
+          <span class="chip-on-img top-2 left-[70px] !bg-black/55" id="camTime">22 เม.ย. 2568 14:32:15</span>
+          <button class="absolute top-2 right-2 bg-white/90 rounded-lg p-1.5 text-gray-700" id="camFull" aria-label="เต็มจอ"><i data-lucide="expand" class="w-4 h-4"></i></button>
+          <span class="chip-on-img bottom-2 right-2 !bg-black/55 !text-[10.5px]">ภาพตัวอย่าง (ไม่ใช่สตรีมจริง)</span>
+        </div>
+        <div id="camThumbs" class="grid grid-cols-4 gap-2 mt-2"></div>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-5 xl:col-span-3">
+        <div class="card-h"><h2 class="card-t">สถานะการเชื่อมต่อ API ภายนอก</h2><button class="lnk" data-form="api">จัดการ<i data-lucide="chevron-right"></i></button></div>
+        <div id="apis" class="divide-line"></div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <div class="card card-pad col-span-12 lg:col-span-6 xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="text-orange-500"><i data-lucide="key-round" class="w-5 h-5"></i></span>API Keys / Token</h2><button class="lnk" data-form="key">จัดการคีย์</button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>ชื่อบริการ</th><th>ประเภท</th><th>Token / API Key (บางส่วน)</th><th>วันที่สร้าง</th><th>สถานะ</th><th></th></tr></thead><tbody id="keyBody"></tbody></table></div>
+        <p class="text-[11.5px] muted mt-2">คีย์เข้ารหัส (encrypted at rest) ฝั่งเซิร์ฟเวอร์ — ไม่ส่งคีย์จริงไปที่เบราว์เซอร์</p>
+      </div>
+      <div class="card card-pad col-span-12 lg:col-span-6 xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="text-red-500"><i data-lucide="webhook" class="w-5 h-5"></i></span>การส่งข้อมูล (Webhook)</h2><button class="lnk" data-form="webhook">ตั้งค่า Webhook</button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>ปลายทาง</th><th>เหตุการณ์</th><th>สถานะ</th><th>ล่าสุด</th></tr></thead><tbody id="hookBody"></tbody></table></div>
+      </div>
+      <div class="card card-pad col-span-12 xl:col-span-4">
+        <div class="card-h"><h2 class="card-t"><span class="text-blue-500"><i data-lucide="clipboard-list" class="w-5 h-5"></i></span>บันทึกการเชื่อมต่อและซิงค์ข้อมูล</h2><button class="lnk" data-toast="ดู ingestion_events + sync_errors ทั้งหมด">ดูทั้งหมด<i data-lucide="chevron-right"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>เวลา</th><th>อุปกรณ์ / บริการ</th><th>เหตุการณ์</th><th>สถานะ</th></tr></thead><tbody id="logBody"></tbody></table></div>
+      </div>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/integrations , /api/v1/iot/devices ===== */
+const KPIS = [
+  { icon: 'router', tone: 'green', label: 'อุปกรณ์ทั้งหมด', value: '12', unit: 'เครื่อง', foot: '<span class="text-green-600">● ออนไลน์ 9</span> &nbsp; <span class="text-red-600">● ออฟไลน์ 3</span>' },
+  { icon: 'cloud', tone: 'blue', label: 'เชื่อมต่อ API ภายนอก', value: '4', unit: 'บริการ', foot: '<span class="text-green-600">● ใช้งานได้ 4</span> &nbsp; <span class="text-red-600">● มีปัญหา 0</span>' },
+  { icon: 'refresh-cw', tone: 'green', label: 'การซิงค์ข้อมูล', value: '125', unit: 'ครั้ง/วัน', foot: '12% จากเมื่อวาน', footIcon: 'arrow-up', footTone: 'green-600' },
+  { icon: 'clock', tone: 'orange', label: 'ข้อมูลล่าสุด', value: '22 เม.ย. 2568', foot: 'เวลา 14:32 น.' },
+  { icon: 'shield-check', tone: 'green', label: 'สถานะระบบ', value: 'ปกติ', foot: '<span class="text-green-600">● ความเสถียร 99.7%</span>' }
+];
+const DEVICES = [
+  { n: 'Weather API', sub: '(กรมอุตุนิยมวิทยา)', type: 'สถานีอากาศ', on: true, g: 'from-sky-300 to-emerald-200', icon: 'cloud-sun', vals: [['thermometer', '32.4°C', 'อุณหภูมิ', 'text-red-500'], ['droplet', '78%', 'ความชื้น', 'text-blue-500'], ['cloud-rain', '0.0 มม.', 'ปริมาณฝน', 'text-sky-500']], t: '14:25' },
+  { n: 'Soil Sensor A1', sub: '(แปลงทุเรียน A1)', type: 'เซ็นเซอร์ดิน', on: true, g: 'from-amber-800 to-amber-600', icon: 'thermometer', vals: [['droplet', '28.5%', 'ความชื้นดิน', 'text-blue-500'], ['zap', '1.2 mS', 'EC ดิน', 'text-green-600'], ['flask-conical', '6.4', 'pH ดิน', 'text-purple-500']], t: '14:28' },
+  { n: 'Irrigation Controller', sub: '(โซน A1)', type: 'ระบบให้น้ำอัตโนมัติ', on: true, g: 'from-slate-400 to-emerald-300', icon: 'cpu', vals: [['power', 'ปิด', 'สถานะ', 'text-red-500'], ['settings-2', 'Auto', 'โหมด', 'text-blue-500'], ['gauge', 'ปกติ', 'แรงดันน้ำ', 'text-green-600']], t: '14:30' },
+  { n: 'Camera C1', sub: '(แปลงทุเรียน A1)', type: 'กล้องส่องแปลง', on: true, g: 'from-emerald-700 to-emerald-400', icon: 'cctv', cam: true, t: '14:30' },
+  { n: 'IoT Gateway 01', sub: '(สวนหลัก)', type: 'เกตเวย์รวบรวมข้อมูล', on: true, g: 'from-gray-200 to-gray-400', icon: 'router', vals: [['', '4', 'อุปกรณ์ที่เชื่อมต่อ', ''], ['', '4G', 'ประเภทการเชื่อมต่อ', ''], ['', '-72 dBm', 'ความแรงสัญญาณ', '']], t: '14:38' },
+  { n: 'Mobile App', sub: '(BUGpairoj)', type: 'แอปพลิเคชันมือถือ', on: true, g: 'from-emerald-500 to-lime-300', icon: 'smartphone', vals: [['users', '238', 'ผู้ใช้งานวันนี้', 'text-green-600'], ['refresh-cw', 'Sync', 'กำลังซิงค์', 'text-green-600']], t: '14:28' },
+  { n: 'Soil Sensor A2', sub: '(แปลงมังคุด A2)', type: 'เซ็นเซอร์ดิน', on: false, g: 'from-amber-800 to-amber-600', icon: 'thermometer', vals: [['battery-low', '5%', 'แบตเตอรี่', 'text-red-500']], t: '09:12' },
+  { n: 'Rain Gauge B1', sub: '(แปลง B1)', type: 'เครื่องวัดปริมาณฝน', on: false, g: 'from-sky-300 to-sky-500', icon: 'cloud-rain', vals: [['wifi-off', '—', 'ขาดการเชื่อมต่อ', 'text-red-500']], t: '21 เม.ย. 18:40' },
+  { n: 'Flow Meter C1', sub: '(โซน C1)', type: 'มาตรวัดอัตราการไหล', on: false, g: 'from-slate-400 to-slate-600', icon: 'waves', vals: [['wifi-off', '—', 'ขาดการเชื่อมต่อ', 'text-red-500']], t: '21 เม.ย. 07:05' }
+];
+const SENSOR = { labels: ['16 เม.ย.', '17 เม.ย.', '18 เม.ย.', '19 เม.ย.', '20 เม.ย.', '21 เม.ย.', '22 เม.ย.'], m: [48, 40, 39, 37, 38, 38, 37], t: [17, 16, 17, 19, 21, 22, 28], ec: [1.25, 1.22, 1.2, 1.18, 1.2, 1.21, 1.2], ph: [6.5, 6.4, 6.4, 6.3, 6.4, 6.4, 6.4] };
+const APIS = [
+  { n: 'กรมอุตุนิยมวิทยา (Weather API)', d: 'ข้อมูลสภาพอากาศ, พยากรณ์อากาศ', t: '14:25', c: 'bg-sky-500', icon: 'cloud-sun' },
+  { n: 'LINE Messaging API', d: 'แจ้งเตือนสถานะและเหตุการณ์', t: '14:30', c: 'bg-[#06C755]', icon: 'message-circle' },
+  { n: 'Google Maps API', d: 'แผนที่และตำแหน่งแปลง', t: '14:28', c: 'bg-red-500', icon: 'map-pin' },
+  { n: 'OpenAI API', d: 'วิเคราะห์ข้อมูลและคำแนะนำ', t: '14:20', c: 'bg-gray-900', icon: 'sparkles' }
+];
+const KEYS = [
+  { n: 'Weather API', t: 'API Key', k: 'a1b2-****-7f9e', d: '12 ม.ค. 2568' }, { n: 'LINE Messaging API', t: 'Channel Access Token', k: 'xoxb-****-d34f', d: '5 ก.พ. 2568' },
+  { n: 'Google Maps', t: 'API Key', k: 'AIza-****-K9mP', d: '10 มี.ค. 2568' }, { n: 'OpenAI', t: 'API Key', k: 'sk-proj-****-8a7Q', d: '1 เม.ย. 2568' }
+];
+const HOOKS = [
+  { n: 'LINE Messaging API', e: 'แจ้งเตือนความผิดปกติ', s: 'สำเร็จ', t: '22 เม.ย. 68 14:28' }, { n: 'ระบบภายนอก (ERP)', e: 'ข้อมูลการให้น้ำ', s: 'สำเร็จ', t: '22 เม.ย. 68 14:25' },
+  { n: 'Google Sheets', e: 'สรุปข้อมูลรายวัน', s: 'สำเร็จ', t: '22 เม.ย. 68 14:20' }, { n: 'Custom Webhook', e: 'เหตุการณ์จากเซ็นเซอร์', s: 'กำลังซิงค์', t: '22 เม.ย. 68 14:31' }
+];
+const LOGS = [
+  ['22 เม.ย. 68 14:32:15', 'Soil Sensor A1', 'รับข้อมูลความชื้นดิน'], ['22 เม.ย. 68 14:31:02', 'IoT Gateway 01', 'ส่งข้อมูลไปยังเซิร์ฟเวอร์'],
+  ['22 เม.ย. 68 14:30:18', 'Camera C1', 'อัปโหลดภาพ'], ['22 เม.ย. 68 14:28:45', 'LINE Messaging API', 'ส่งการแจ้งเตือน'],
+  ['22 เม.ย. 68 14:25:33', 'Weather API', 'ดึงข้อมูลสภาพอากาศ'], ['22 เม.ย. 68 14:20:11', 'OpenAI API', 'วิเคราะห์ข้อมูล']
+];
+
+/* ===== Render ===== */
+UI.mountKpis('#kpis', KPIS);
+let devKey = 'all';
+function renderDevices() {
+  const list = DEVICES.filter(d => devKey === 'all' || (devKey === 'on' ? d.on : !d.on)).slice(0, devKey === 'all' ? 6 : 9);
+  $('#devices').innerHTML = list.map((d, i) => `<div class="rounded-xl border bline overflow-hidden flex flex-col">
+    <div class="relative h-[96px] bg-gradient-to-br ${d.g} grid place-items-center text-white/95">${d.cam ? scene('camera', 'absolute inset-0 !rounded-none', 2) : ic(d.icon, 'w-12 h-12 drop-shadow')}
+      <span class="absolute top-2 right-2 bdg ${d.on ? 'bg-white text-green-700' : 'bg-white text-red-600'} !text-[11px] shadow">${ic(d.on ? 'circle-check' : 'circle-x', 'w-3.5 h-3.5')}${d.on ? 'เชื่อมต่อแล้ว' : 'ออฟไลน์'}</span></div>
+    <div class="p-3 text-center flex-1 flex flex-col"><b class="text-[14px] leading-5">${d.n}</b><div class="text-[12.5px] font-medium">${d.sub}</div><div class="text-[11.5px] muted">${d.type}</div>
+      ${d.cam ? `<div class="grid grid-cols-2 gap-2 mt-2 items-center"><div class="h-[44px]">${scene('orchard', 'h-full !rounded-md', 4)}</div><button class="btn btn-sm btn-soft-green" data-cam>${ic('search')}ดูภาพสด</button></div>`
+        : `<div class="grid grid-cols-${d.vals.length} gap-1 mt-2">${d.vals.map(v => `<div><div class="flex items-center justify-center gap-1 font-bold text-[14px]">${v[0] ? ic(v[0], 'w-4 h-4 ' + v[3]) : ''}${v[1]}</div><div class="text-[10.5px] muted leading-3">${v[2]}</div></div>`).join('')}</div>`}
+      <div class="flex items-center justify-between text-[11px] muted mt-auto pt-2"><span>ข้อมูลล่าสุด ${d.t.includes('เม.ย.') ? d.t : '22 เม.ย. 68 ' + d.t} น.</span><span class="${d.on ? 'text-green-600' : 'text-red-500'}">${ic(d.on ? 'signal' : 'signal-zero', 'w-4 h-4')}</span></div></div></div>`).join('');
+  UI.icons();
+}
+UI.tabs('#devTabs', k => { devKey = k; renderDevices(); }); renderDevices();
+
+let sC;
+function drawSensor(n) {
+  if (sC) { sC.destroy(); Charts.list = Charts.list.filter(c => c !== sC); }
+  const s = a => a.slice(-n);
+  sC = Charts.make('sensorChart', { type: 'line', data: { labels: s(SENSOR.labels), datasets: [
+    { label: 'ความชื้นดิน (%)', data: s(SENSOR.m), borderColor: '#1e88e5', backgroundColor: Charts.fade('#8e5bd6', .18), fill: true, tension: .3, yAxisID: 'y', pointRadius: 3.5, pointBackgroundColor: '#1e88e5' },
+    { label: 'อุณหภูมิดิน (°C)', data: s(SENSOR.t), borderColor: '#F58A25', tension: .3, yAxisID: 'y', pointRadius: 3.5, pointBackgroundColor: '#F58A25' },
+    { label: 'EC (mS/cm)', data: s(SENSOR.ec), borderColor: '#2e8b47', tension: .3, yAxisID: 'y1', pointRadius: 3.5, pointBackgroundColor: '#2e8b47' },
+    { label: 'pH', data: s(SENSOR.ph), borderColor: '#8e5bd6', tension: .3, yAxisID: 'y1', pointRadius: 3.5, pointBackgroundColor: '#8e5bd6' }] },
+    options: { scales: { y: { min: 0, max: 60, ticks: { stepSize: 20 } }, y1: { position: 'right', min: 0, max: 10, grid: { display: false } }, x: { grid: { display: false } } } } });
+}
+drawSensor(7); $('#daysSel').onchange = e => drawSensor(+e.target.value);
+$('#sensorSel').onchange = e => UI.toast(`โหลดข้อมูลจาก ${e.target.value} (GET /api/v1/sensor-measurements)`);
+
+$('#camMain').innerHTML = scene('orchard', 'h-full !rounded-none', 6);
+$('#camThumbs').innerHTML = [6, 3, 'durian', 'durian2'].map((s, i) => `<button class="h-[56px] rounded-lg overflow-hidden ${i === 0 ? 'ring-2 ring-green-600' : ''}" data-thumb="${s}">${typeof s === 'number' ? scene('orchard', 'h-full !rounded-none', s) : scene('durian', 'h-full !rounded-none')}</button>`).join('');
+$('#camThumbs').addEventListener('click', e => { const b = e.target.closest('[data-thumb]'); if (!b) return; $$('#camThumbs button').forEach(x => x.classList.toggle('ring-2', x === b)); $$('#camThumbs button').forEach(x => x.classList.toggle('ring-green-600', x === b)); const s = b.dataset.thumb; $('#camMain').innerHTML = isNaN(+s) ? scene('durian', 'h-full !rounded-none') : scene('orchard', 'h-full !rounded-none', +s); });
+$('#camFull').onclick = () => { const b = $('#camBox'); document.fullscreenElement ? document.exitFullscreen() : b.requestFullscreen && b.requestFullscreen(); };
+let sec = 15; setInterval(() => { sec = (sec + 1) % 60; $('#camTime').textContent = `22 เม.ย. 2568 14:32:${String(sec).padStart(2, '0')}`; }, 1000);
+
+$('#apis').innerHTML = APIS.map((a, i) => `<div class="flex items-start gap-3 py-2.5"><span class="w-9 h-9 rounded-full ${a.c} text-white grid place-items-center shrink-0">${ic(a.icon, 'w-5 h-5')}</span><div class="flex-1 min-w-0"><b class="text-[13px] block leading-5">${a.n}</b><span class="text-[11.5px] muted block">${a.d}</span>
+  <div class="flex flex-wrap items-center gap-2 mt-1"><span class="bdg t-green !text-[11px]">เชื่อมต่อแล้ว</span><span class="text-[11px] muted">ข้อมูลล่าสุด 22 เม.ย. 68 ${a.t} น.</span></div></div><button class="btn btn-sm !border-0 !px-1" data-api="${i}" aria-label="เพิ่มเติม">${ic('ellipsis-vertical')}</button></div>`).join('');
+$('#keyBody').innerHTML = KEYS.map((k, i) => `<tr><td class="whitespace-nowrap">${k.n}</td><td class="whitespace-nowrap">${k.t}</td><td><code class="text-[12px]">${k.k}</code></td><td class="whitespace-nowrap">${k.d}</td><td>${UI.badge('ใช้งานอยู่', 'green')}</td><td><button class="btn btn-sm !border-0 !px-1" data-key="${i}" aria-label="จัดการคีย์">${ic('ellipsis-vertical')}</button></td></tr>`).join('');
+$('#hookBody').innerHTML = HOOKS.map(h => `<tr><td class="whitespace-nowrap">${h.n}</td><td class="wrap">${h.e}</td><td>${UI.badge(h.s, h.s === 'สำเร็จ' ? 'green' : 'orange', true)}</td><td class="whitespace-nowrap">${h.t}</td></tr>`).join('');
+$('#logBody').innerHTML = LOGS.map(l => `<tr><td class="whitespace-nowrap">${l[0]}</td><td class="whitespace-nowrap">${l[1]}</td><td>${l[2]}</td><td>${UI.badge('สำเร็จ', 'green', true)}</td></tr>`).join('');
+
+/* ===== Events ===== */
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-cam]')) $('#camBox').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const a = e.target.closest('[data-api]'); if (a) { e.stopPropagation(); const x = APIS[+a.dataset.api]; UI.menu(a, [
+    { t: 'ทดสอบการเชื่อมต่อ', icon: 'plug-zap', onClick: () => { UI.toast(`กำลังทดสอบ ${x.n}...`, 'loader'); setTimeout(() => UI.toast(`${x.n}: HTTP 200 · 182 ms (health check ผ่าน)`), 1100); } },
+    { t: 'ดูประวัติการซิงค์', icon: 'history', onClick: () => UI.toast('sync history + dead-letter reprocess') }, { t: 'ปิดการเชื่อมต่อ', icon: 'unplug', danger: true, onClick: () => UI.toast(`ปิด ${x.n} แล้ว — ระบบยังบันทึกข้อมูลด้วยมือได้`) }]); }
+  const k = e.target.closest('[data-key]'); if (k) { e.stopPropagation(); const x = KEYS[+k.dataset.key]; UI.menu(k, [
+    { t: 'หมุนเวียนคีย์ (Rotate)', icon: 'rotate-cw', onClick: () => FORMS.key(x) }, { t: 'เพิกถอน (Revoke)', icon: 'ban', danger: true, onClick: () => UI.toast(`เพิกถอน ${x.n} แล้ว (audit log)`) }]); }
+});
+$('#btnMore').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, [{ t: 'นำเข้าข้อมูล CSV/XLSX/GeoJSON', icon: 'upload', onClick: () => UI.toast('Template validation → dry-run → commit') }, { t: 'Health check ทั้งหมด', icon: 'heart-pulse', onClick: () => UI.toast('ทุกบริการตอบสนองปกติ (DEMO)') }, { t: 'เอกสาร API (OpenAPI 3.1)', icon: 'book-open', onClick: () => UI.toast('/docs/api/openapi.yaml') }]); };
+window.FORMS = {
+  device: () => UI.formModal('เพิ่มอุปกรณ์ IoT', [
+    { n: 'name', l: 'ชื่ออุปกรณ์', req: true }, { n: 'type', l: 'ประเภท', t: 'select', o: ['เซ็นเซอร์ดิน', 'สถานีอากาศ', 'เครื่องวัดฝน', 'มาตรวัดการไหล', 'กล้อง', 'เกตเวย์'] },
+    { n: 'plot', l: 'แปลง/โซน', t: 'select', o: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2', 'สวนหลัก'] }, { n: 'proto', l: 'โปรโตคอล', t: 'select', o: ['MQTT', 'HTTP Webhook (signed)', 'LoRaWAN'] },
+    { n: 'serial', l: 'Serial / Device ID', req: true }, { n: 'interval', l: 'รอบส่งข้อมูล (นาที)', t: 'number', v: '15' }
+  ], { api: 'POST /api/v1/iot/devices' }),
+  api: () => UI.formModal('เชื่อมต่อ API ภายนอก', [
+    { n: 'provider', l: 'ผู้ให้บริการ', t: 'select', o: ['กรมอุตุนิยมวิทยา (TMD API)', 'Open-Meteo', 'NASA POWER', 'LINE Messaging API', 'Telegram Bot', 'Email (SMTP)', 'AI Provider'], req: true },
+    { n: 'key', l: 'API Key / Token', t: 'password', req: true }, { n: 'interval', l: 'รอบดึงข้อมูล', t: 'select', o: ['ทุก 1 ชั่วโมง', 'ทุก 3 ชั่วโมง', 'ทุกวัน'] }, { n: 'note', l: 'หมายเหตุ (license / rate limit)', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/integrations/{provider}/test' }),
+  webhook: () => UI.formModal('ตั้งค่า Webhook', [
+    { n: 'url', l: 'Endpoint URL (https)', t: 'url', req: true, full: true }, { n: 'event', l: 'เหตุการณ์', t: 'select', o: ['แจ้งเตือนความผิดปกติ', 'ข้อมูลการให้น้ำ', 'สรุปข้อมูลรายวัน', 'เหตุการณ์จากเซ็นเซอร์'] },
+    { n: 'secret', l: 'Signing secret (HMAC)', t: 'password' }, { n: 'retry', l: 'Retry', t: 'select', o: ['3 ครั้ง (exponential backoff)', '5 ครั้ง'] }
+  ], { api: 'POST /api/v1/webhooks' }),
+  key: (k = {}) => UI.formModal(k.n ? `หมุนเวียนคีย์ ${k.n}` : 'เพิ่ม API Key', [
+    { n: 'service', l: 'บริการ', v: k.n || '', req: true }, { n: 'type', l: 'ประเภท', t: 'select', o: ['API Key', 'Channel Access Token', 'OAuth Client'], v: k.t }, { n: 'value', l: 'ค่าคีย์ใหม่', t: 'password', req: true }, { n: 'expire', l: 'วันหมดอายุ', t: 'date' }
+  ], { api: 'POST /api/v1/integrations/keys (encrypt at rest)' })
+};
+UI.icons();
+</script>
+</body>
+</html>

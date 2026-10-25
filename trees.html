@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ทะเบียนต้นไม้ | BUGpairoj Fruit Growth AI 360°</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/js/tw-config.js"></script>
+<link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body data-page="trees" data-loc="อำเภอท่าศาลา" data-search="ค้นหาสวน แปลง ต้นไม้ หรือกิจกรรม...">
+<aside id="sidebar"></aside>
+<div class="lg:pl-[232px] min-h-screen flex flex-col">
+  <header id="topbar"></header>
+  <main class="flex-1 p-4 lg:p-6 space-y-4">
+    <nav class="text-[13px] muted flex items-center gap-1.5"><a href="dashboard.html" aria-label="หน้าหลัก"><i data-lucide="house" class="w-4 h-4"></i></a><span>/</span><span>ต้นไม้</span></nav>
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <h1 class="text-[28px] font-bold leading-tight">ทะเบียนต้นไม้</h1>
+        <p class="muted mt-1 text-[15px]">จัดการข้อมูลต้นไม้ในสวน ตรวจสอบสุขภาพ ผลผลิต และประวัติการดูแลแบบครบถ้วน</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button class="btn" id="btnExport"><i data-lucide="download"></i>ส่งออกข้อมูล<i data-lucide="chevron-down"></i></button>
+        <button class="btn btn-green" data-form="tree"><i data-lucide="plus"></i>เพิ่มต้นไม้</button>
+        <button class="btn" id="btnPrintQR"><i data-lucide="qr-code"></i>พิมพ์ QR Code</button>
+        <button class="btn" id="btnMore"><i data-lucide="ellipsis-vertical"></i>ตัวเลือก<i data-lucide="chevron-down"></i></button>
+      </div>
+    </div>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+      <div id="kpis" class="contents"></div>
+      <div class="card card-pad sm:col-span-2 xl:col-span-1">
+        <div class="font-semibold mb-2 text-[14px]">สัดส่วนตามชนิดพืช</div>
+        <div id="ratio" class="grid grid-cols-5 gap-2"></div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="flex flex-wrap gap-2 items-center">
+      <div class="relative flex-1 min-w-[240px] max-w-[460px]"><i data-lucide="search" class="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 muted"></i><input id="q" class="inp !pl-10" placeholder="ค้นหารหัสต้นไม้, ชนิดพืช, สายพันธุ์, แปลง..."></div>
+      <select class="sel w-auto" id="fPlot"><option value="">ทุกแปลง</option></select>
+      <select class="sel w-auto" id="fCrop"><option value="">ทุกชนิดพืช</option></select>
+      <select class="sel w-auto" id="fStatus"><option value="">ทุกสถานะ</option><option>ปกติ</option><option>เฝ้าระวัง</option><option>ต้องดูแล</option></select>
+      <select class="sel w-auto" id="fHealth"><option value="">สุขภาพทั้งหมด</option><option value="90">ดีมาก (≥ 90)</option><option value="80">ดี (80-89)</option><option value="0">ต่ำกว่า 80</option></select>
+      <button class="btn" id="btnReset"><i data-lucide="rotate-ccw"></i>รีเซ็ต</button>
+    </section>
+
+    <section class="grid grid-cols-12 gap-4">
+      <!-- Table -->
+      <div class="card card-pad col-span-12 2xl:col-span-7">
+        <div class="card-h"><h2 class="card-t" id="tblTitle">รายการต้นไม้ทั้งหมด (1,842 ต้น)</h2><button class="btn btn-sm btn-icon !w-8 !h-8" id="btnClear" aria-label="ล้างการเลือก"><i data-lucide="x"></i></button></div>
+        <div class="tbl-wrap"><table class="tbl">
+          <thead><tr><th><input type="checkbox" id="chkAll" aria-label="เลือกทั้งหมด"></th><th>รหัสต้นไม้</th><th>รูป</th><th>ชนิดพืช</th><th>สายพันธุ์</th><th>แปลง</th><th class="num">อายุ (ปี)</th><th>สถานะ</th><th>คะแนนสุขภาพ</th><th>วันวัดล่าสุด</th><th>จัดการ</th></tr></thead>
+          <tbody id="treeBody"></tbody>
+        </table></div>
+        <div class="flex flex-wrap items-center justify-between gap-3 mt-3 text-[13px]">
+          <span class="muted" id="pgInfo"></span>
+          <div class="flex gap-1" id="pager"></div>
+          <div class="flex items-center gap-2"><span class="muted">แสดง</span><select class="sel sel-sm" id="perPage"><option>10</option><option>20</option><option>50</option></select><span class="muted">รายการ/หน้า</span></div>
+        </div>
+      </div>
+
+      <!-- Detail -->
+      <aside class="card card-pad col-span-12 2xl:col-span-5" id="detail" aria-live="polite"></aside>
+    </section>
+  </main>
+  <footer id="footer"></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+/* ===== DEMO DATA — GET /api/v1/trees?page=&per_page=&q= ===== */
+const KPIS = [
+  { icon: 'tree-deciduous', tone: 'green', label: 'จำนวนต้นไม้ทั้งหมด', value: '1,842', unit: 'ต้น', foot: '+5 ต้น จากเดือนที่แล้ว', footIcon: 'triangle', footTone: 'green-600' },
+  { icon: 'leaf', tone: 'green', label: 'ต้นไม้สุขภาพดี', value: '1,524', unit: 'ต้น', foot: '82.7% ของทั้งหมด', footTone: 'green-600' },
+  { icon: 'triangle-alert', tone: 'red', label: 'ต้นไม้ที่ต้องดูแล', value: '218', unit: 'ต้น', foot: '11.8% ของทั้งหมด', footTone: 'red-600' },
+  { icon: 'shopping-basket', tone: 'orange', label: 'ต้นพร้อมเก็บเกี่ยว (30 วัน)', value: '96', unit: 'ต้น', foot: '5.2% ของทั้งหมด', footTone: 'orange-600' }
+];
+const RATIO = [{ k: 'durian', p: 28 }, { k: 'mangosteen', p: 22 }, { k: 'mango', p: 18 }, { k: 'rambutan', p: 17 }, { k: 'longan', p: 15 }];
+const SEED_ROWS = [
+  ['TUR-A1-001', 'durian', 'หมอนทอง', 'A1', 5, 'ปกติ', 92, '2025-04-20'], ['TUR-A1-002', 'durian', 'ก้านยาว', 'A1', 4, 'ปกติ', 88, '2025-04-18'],
+  ['TUR-A2-015', 'durian', 'ชะนี', 'A2', 6, 'เฝ้าระวัง', 68, '2025-04-19'], ['MAN-B1-003', 'mangosteen', 'พื้นเมือง', 'B1', 8, 'ปกติ', 90, '2025-04-21'],
+  ['MAN-B1-004', 'mangosteen', 'เขียวใหญ่', 'B1', 6, 'ปกติ', 86, '2025-04-18'], ['MGO-C1-001', 'mango', 'น้ำดอกไม้', 'C1', 4, 'ปกติ', 94, '2025-04-20'],
+  ['MGO-C1-002', 'mango', 'โชคอนันต์', 'C1', 5, 'ปกติ', 89, '2025-04-17'], ['RAM-C2-007', 'rambutan', 'โรงเรียน', 'C2', 7, 'เฝ้าระวัง', 72, '2025-04-19'],
+  ['RAM-C2-008', 'rambutan', 'สีชมพู', 'C2', 6, 'ปกติ', 85, '2025-04-18'], ['LNG-B2-010', 'longan', 'อีดอ', 'B2', 8, 'ปกติ', 91, '2025-04-21']
+];
+const VAR = { durian: ['หมอนทอง', 'ก้านยาว', 'ชะนี', 'พวงมณี'], mangosteen: ['พื้นเมือง', 'เขียวใหญ่'], mango: ['น้ำดอกไม้', 'โชคอนันต์', 'เขียวเสวย'], rambutan: ['โรงเรียน', 'สีชมพู'], longan: ['อีดอ', 'สีชมพู'] };
+const PFX = { durian: 'TUR', mangosteen: 'MAN', mango: 'MGO', rambutan: 'RAM', longan: 'LNG' };
+const PLOTS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+/* สร้างข้อมูลจำลองครบ 1,842 ต้น (deterministic) เพื่อให้ค้นหา/แบ่งหน้าทำงานได้จริง */
+const TREES = SEED_ROWS.map(r => ({ id: r[0], crop: r[1], variety: r[2], plot: r[3], age: r[4], st: r[5], score: r[6], last: r[7] }));
+(function gen() {
+  const crops = ['durian', 'durian', 'mangosteen', 'mango', 'rambutan', 'longan', 'durian'];
+  let n = 20;
+  while (TREES.length < 1842) {
+    const i = TREES.length, c = crops[i % crops.length], pl = PLOTS[(i * 7) % 6], sc = 60 + ((i * 37) % 40);
+    TREES.push({ id: `${PFX[c]}-${pl}-${String(n++).padStart(3, '0')}`, crop: c, variety: VAR[c][i % VAR[c].length], plot: pl, age: 2 + (i % 8), st: sc < 70 ? 'ต้องดูแล' : sc < 78 ? 'เฝ้าระวัง' : 'ปกติ', score: sc, last: `2025-04-${String(10 + (i % 12)).padStart(2, '0')}` });
+  }
+})();
+const ST_TONE = { 'ปกติ': 'green', 'เฝ้าระวัง': 'orange', 'ต้องดูแล': 'red' };
+const scoreTone = s => s >= 85 ? 'green' : s >= 75 ? 'yellow' : 'orange';
+let page = 1, per = 10, sel = TREES[0], tab = 'overview';
+
+UI.mountKpis('#kpis', KPIS);
+$('#ratio').innerHTML = RATIO.map(r => `<div class="text-center"><div class="flex justify-center">${fruitSvg(r.k, 30)}</div><div class="text-[11.5px] mt-1">${FRUIT[r.k].th}</div><div class="font-bold text-[14px]">${r.p}%</div><div class="pg !h-1.5 mt-1"><i style="width:${r.p * 3}%;background:${FRUIT[r.k].color}"></i></div></div>`).join('');
+$('#fPlot').innerHTML += PLOTS.map(p => `<option>${p}</option>`).join('');
+$('#fCrop').innerHTML += Object.keys(FRUIT).map(k => `<option value="${k}">${FRUIT[k].th}</option>`).join('');
+
+function filtered() {
+  const q = $('#q').value.trim().toLowerCase(), pl = $('#fPlot').value, c = $('#fCrop').value, st = $('#fStatus').value, h = $('#fHealth').value;
+  return TREES.filter(t => (!q || [t.id, FRUIT[t.crop].th, t.variety, t.plot].join(' ').toLowerCase().includes(q)) && (!pl || t.plot === pl) && (!c || t.crop === c) && (!st || t.st === st) &&
+    (!h || (h === '90' ? t.score >= 90 : h === '80' ? t.score >= 80 && t.score < 90 : t.score < 80)));
+}
+function renderTable() {
+  const rows = filtered(), pages = Math.max(1, Math.ceil(rows.length / per)); if (page > pages) page = pages;
+  const slice = rows.slice((page - 1) * per, page * per);
+  $('#tblTitle').textContent = `รายการต้นไม้ทั้งหมด (${nf(rows.length)} ต้น)`;
+  $('#treeBody').innerHTML = slice.length ? slice.map(t => `<tr class="${sel && sel.id === t.id ? 'sel' : ''} cursor-pointer" data-id="${t.id}">
+    <td><input type="checkbox" class="rowchk" value="${t.id}" aria-label="เลือก ${t.id}"></td><td class="font-medium whitespace-nowrap">${t.id}</td>
+    <td><span class="w-9 h-9 rounded-lg grid place-items-center t-green">${fruitSvg(t.crop, 26)}</span></td>
+    <td class="whitespace-nowrap"><span class="inline-flex items-center gap-1.5"><i class="w-2 h-2 rounded-full inline-block" style="background:${FRUIT[t.crop].color}"></i>${FRUIT[t.crop].th}</span></td>
+    <td>${t.variety}</td><td>${t.plot}</td><td class="num">${t.age}</td><td>${UI.badge(t.st, ST_TONE[t.st], true)}</td>
+    <td><span class="bdg bdg-sq t-${scoreTone(t.score)} !text-[14px] !font-bold">${t.score}</span></td><td class="whitespace-nowrap">${thDate(t.last)}</td>
+    <td><button class="btn btn-sm !border-0" data-menu="${t.id}" aria-label="จัดการ ${t.id}">${ic('ellipsis-vertical')}</button></td></tr>`).join('')
+    : `<tr><td colspan="11" class="text-center muted py-10">ไม่พบต้นไม้ตามเงื่อนไข</td></tr>`;
+  const from = rows.length ? (page - 1) * per + 1 : 0;
+  $('#pgInfo').textContent = `แสดง ${nf(from)} - ${nf(Math.min(page * per, rows.length))} จาก ${nf(rows.length)} รายการ`;
+  const btn = (p, label = p, dis = false, nav = false) => `<button class="btn btn-sm !w-8 !h-8 !p-0 ${p === page && !nav ? 'btn-green' : ''}" data-pg="${p}" ${dis ? 'disabled' : ''}>${label}</button>`;
+  let pg = btn(Math.max(1, page - 1), ic('chevron-left', 'w-4 h-4'), page === 1, true);
+  const list = [...new Set([1, 2, 3, 4, 5, page, pages].filter(x => x >= 1 && x <= pages))].sort((a, b) => a - b);
+  list.forEach((p, i) => { if (i && p - list[i - 1] > 1) pg += '<span class="px-1 muted self-center">…</span>'; pg += btn(p); });
+  pg += btn(Math.min(pages, page + 1), ic('chevron-right', 'w-4 h-4'), page === pages, true);
+  $('#pager').innerHTML = pg; UI.icons();
+}
+
+/* ---------- Detail panel ---------- */
+let miniChart = null;
+function detailData(t) {
+  const n = parseInt(t.id.slice(-3), 10) || 1;
+  return {
+    zone: { A1: 'โซนเหนือ', A2: 'โซนเหนือ', B1: 'โซนกลาง', B2: 'โซนกลาง', C1: 'โซนใต้', C2: 'โซนใต้' }[t.plot], pos: `${t.plot}-${10 + (n % 30)}`,
+    planted: thDate(`${2025 - t.age}-05-12`), height: (t.age * 1.2 + .2).toFixed(1), dbh: Math.round(t.age * 5 + 3), canopy: (t.age * .9 + .3).toFixed(1),
+    days: t.id === 'TUR-A1-001' ? 68 : 40 + (n * 7) % 60, yieldRange: t.crop === 'durian' ? '120-150' : t.crop === 'longan' ? '40-60' : '30-50'
+  };
+}
+function renderDetail() {
+  const t = sel; if (!t) { $('#detail').innerHTML = '<p class="muted text-center py-20">เลือกต้นไม้จากตารางเพื่อดูรายละเอียด</p>'; return; }
+  const d = detailData(t);
+  const hd = new Date(2025, 3, 23 + d.days);
+  $('#detail').innerHTML = `
+  <div class="card-h"><h2 class="card-t">ข้อมูลต้นไม้</h2><div class="flex gap-2"><button class="lnk" data-form="treeEdit">${ic('pencil')}แก้ไขข้อมูล</button><button class="btn btn-sm btn-icon !w-8 !h-8" id="closeDetail" aria-label="ปิด">${ic('x')}</button></div></div>
+  <div class="grid grid-cols-[1fr_auto] gap-3">
+    <div class="grid grid-cols-[2fr_1fr_1fr] grid-rows-2 gap-2 h-[170px]">
+      <div class="row-span-2">${scene('orchard', 'h-full', 2)}</div>${scene('durian', 'h-full')}${scene('leaf', 'h-full', 'healthy')}${scene('orchard', 'h-full', 7)}
+      <div class="relative">${scene('durian', 'h-full')}<div class="absolute inset-0 rounded-xl bg-black/55 grid place-items-center text-white font-bold text-lg">+8</div></div>
+    </div>
+    <div class="flex flex-col items-center gap-2"><div id="qr" class="p-2 bg-white rounded-lg border bline"></div><span class="text-[12px] font-semibold">${t.id}</span><button class="btn btn-green btn-sm" id="printQR">พิมพ์ป้าย QR ${ic('printer')}</button></div>
+  </div>
+  <div class="flex flex-wrap items-start justify-between gap-3 mt-4">
+    <div class="flex gap-3"><span class="ib t-green">${ic('tree-deciduous')}</span><div>
+      <div class="flex items-center gap-2"><b class="text-[20px]">${t.id}</b>${UI.badge(t.st, ST_TONE[t.st], true)}</div>
+      <div class="text-[14px]">${FRUIT[t.crop].th} &nbsp;|&nbsp; ${t.variety}</div>
+      <div class="text-[12.5px] muted flex flex-wrap gap-3 mt-1"><span class="flex items-center gap-1">${ic('map-pin', 'w-3.5 h-3.5')}แปลง ${t.plot} (${d.zone})</span><span class="flex items-center gap-1">${ic('map-pin', 'w-3.5 h-3.5')}ตำแหน่ง ${d.pos}</span></div></div></div>
+    <div class="flex items-center gap-2 rounded-xl border bline px-3 py-2"><span class="ib ib-sm t-green">${ic('sprout')}</span><div><b>อายุ ${t.age} ปี</b><div class="text-[11.5px] muted">ปลูกเมื่อ ${d.planted}</div></div></div>
+  </div>
+  <div class="tabs mt-4" id="dTabs">${[['overview', 'ภาพรวม'], ['care', 'ประวัติการดูแล'], ['growth', 'การเติบโต'], ['yield', 'ผลผลิต'], ['files', 'บันทึก/ไฟล์']].map(([k, l]) => `<button class="tab ${tab === k ? 'on' : ''}" data-tab="${k}">${l}</button>`).join('')}</div>
+  <div id="dBody" class="mt-3"></div>`;
+  const body = {
+    overview: `<div class="grid grid-cols-3 gap-3">
+        <div class="rounded-xl border bline p-3 text-center"><div class="text-[12.5px] font-medium text-left">คะแนนสุขภาพ</div><div class="flex justify-center">${UI.ring(t.score, { size: 100, label: t.score, sub: '/100', color: t.score >= 85 ? '#2e8b47' : '#F58A25' })}</div><div class="text-[12px] ${t.score >= 85 ? 'text-green-600' : 'text-orange-600'}">${t.score >= 90 ? 'สุขภาพดีมาก' : t.score >= 80 ? 'สุขภาพดี' : 'ควรติดตาม'}</div></div>
+        <div class="rounded-xl border bline p-3"><div class="text-[12.5px] font-medium">สถานะปัจจุบัน</div><div class="flex items-center gap-2 mt-4"><span class="ib t-${ST_TONE[t.st]}">${ic('leaf')}</span><div><b class="text-[18px]">${t.st}</b><div class="text-[11.5px] muted">${t.st === 'ปกติ' ? 'ไม่มีความเสี่ยงในขณะนี้' : 'ควรตรวจซ้ำภายใน 7 วัน'}</div></div></div></div>
+        <div class="rounded-xl border bline p-3"><div class="text-[12.5px] font-medium">คาดการณ์เก็บเกี่ยว</div><div class="flex items-center gap-2 mt-4"><span class="ib t-red">${ic('calendar')}</span><div><b class="text-[18px]">อีก ${d.days} วัน</b><div class="text-[11.5px] muted">ประมาณ ${thDate(hd)}</div></div></div></div>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3 text-[12.5px]">
+        <div class="flex gap-2"><span class="text-green-600">${ic('move-vertical')}</span><div><div class="muted">ความสูง</div><b class="text-[16px]">${d.height} เมตร</b><div class="text-green-600">▲+0.3 เมตร (เดือน)</div></div></div>
+        <div class="flex gap-2"><span class="text-green-600">${ic('circle-dot')}</span><div><div class="muted">เส้นผ่านศูนย์กลาง</div><b class="text-[16px]">${d.dbh} ซม.</b><div class="text-green-600">▲+2 ซม. (6 เดือน)</div></div></div>
+        <div class="flex gap-2"><span class="text-green-600">${ic('trees')}</span><div><div class="muted">ทรงพุ่ม</div><b class="text-[16px]">${d.canopy} เมตร</b><div class="muted">ทรงดี</div></div></div>
+        <div class="flex gap-2"><span class="text-green-600">${ic('apple')}</span><div><div class="muted">ผลผลิตคาดการณ์</div><b class="text-[16px]">${d.yieldRange} กก.</b><div class="muted">ต่อ ต้น</div></div></div>
+      </div>
+      <p class="mt-3"><span class="trust">${ic('info', 'w-3 h-3')}ช่วงคาดการณ์อ้างอิง baseline ที่อนุมัติ — แสดงช่วง ไม่ใช่วันที่ตายตัว</span></p>`,
+    care: `<ol class="relative border-l-2 bline ml-2 space-y-4">${[['sprout', 'green', 'ใส่ปุ๋ย สูตร 13-13-21 อัตรา 1.0 กก./ต้น', '22 เม.ย. 2568 09:15 · สมชาย ใจดี'], ['droplets', 'blue', 'ให้น้ำ 120 ลิตร (ระบบ IoT)', '20 เม.ย. 2568 16:30 · ระบบ IoT'], ['bug', 'red', 'สำรวจโรคแมลง — ไม่พบการระบาด', '18 เม.ย. 2568 10:20 · สมชาย ใจดี'], ['ruler', 'purple', 'วัดการเจริญเติบโต (สูง/ทรงพุ่ม/DBH)', '15 เม.ย. 2568 08:45 · ทีมงานสวน'], ['scissors', 'orange', 'ตัดแต่งกิ่ง', '10 เม.ย. 2568 14:10 · ทีมงานสวน']].map(x => `<li class="ml-5"><span class="absolute -left-[13px] ib ib-xs !w-6 !h-6 t-${x[1]}">${ic(x[0])}</span><b class="text-[13.5px]">${x[2]}</b><div class="text-[12px] muted">${x[3]}</div></li>`).join('')}</ol>`,
+    growth: `<div class="relative flex items-center justify-center h-[220px]"><canvas id="miniChart" class="max-w-full"></canvas></div>`,
+    yield: `<div class="tbl-wrap"><table class="tbl tbl-sm"><thead><tr><th>ฤดูกาล</th><th class="num">ผลผลิต (กก.)</th><th class="num">จำนวนผล</th><th>เกรด A</th><th>Lot</th></tr></thead><tbody>
+      <tr><td>2567</td><td class="num">138</td><td class="num">46</td><td>58%</td><td>LOT-67-${t.plot}-021</td></tr><tr><td>2566</td><td class="num">121</td><td class="num">41</td><td>52%</td><td>LOT-66-${t.plot}-017</td></tr><tr><td>2565</td><td class="num">96</td><td class="num">33</td><td>47%</td><td>LOT-65-${t.plot}-009</td></tr></tbody></table></div>`,
+    files: `<ul class="divide-line">${[['image', 'ภาพต้นไม้_เม.ย.68.jpg', '1.2 MB'], ['file-text', 'ผลวิเคราะห์ใบ_มี.ค.68.pdf', '380 KB'], ['file-text', 'บันทึกตัดแต่งกิ่ง.pdf', '210 KB']].map(f => `<li class="flex items-center gap-3 py-2.5"><span class="ib ib-xs t-gray">${ic(f[0])}</span><span class="flex-1">${f[1]}</span><span class="muted text-[12px]">${f[2]}</span><button class="btn btn-sm" data-toast="ดาวน์โหลดผ่าน signed URL (ไฟล์เก็บนอก webroot)">${ic('download')}</button></li>`).join('')}</ul>
+      <button class="btn btn-sm mt-2" data-toast="อัปโหลดไฟล์: ตรวจ MIME + magic bytes ก่อนบันทึก">${ic('upload')}อัปโหลดไฟล์</button>`
+  };
+  $('#dBody').innerHTML = body[tab];
+  if (window.QRCode) new QRCode($('#qr'), { text: `https://fruit.bugpairoj.local/t/${t.id}`, width: 96, height: 96, correctLevel: QRCode.CorrectLevel.M });
+  if (tab === 'growth') {
+    if (miniChart) { miniChart.destroy(); Charts.list = Charts.list.filter(c => c !== miniChart); }
+    const h = +d.height;
+    miniChart = Charts.make('miniChart', { type: 'line', data: { labels: ['พ.ย. 67', 'ธ.ค. 67', 'ม.ค. 68', 'ก.พ. 68', 'มี.ค. 68', 'เม.ย. 68'], datasets: [
+      { label: 'ความสูง (ม.)', data: [h - 1.5, h - 1.2, h - .9, h - .6, h - .3, h].map(v => +v.toFixed(1)), borderColor: '#2e8b47', backgroundColor: Charts.fade('#2e8b47'), fill: true, tension: .35 },
+      { label: 'ทรงพุ่ม (ม.)', data: [-1.2, -1, -.7, -.5, -.2, 0].map(x => +(+d.canopy + x).toFixed(1)), borderColor: '#F58A25', tension: .35 }] }, options: { scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } } });
+  }
+  UI.icons();
+}
+
+/* ---------- Events ---------- */
+['#q', '#fPlot', '#fCrop', '#fStatus', '#fHealth'].forEach(s => $(s).addEventListener('input', () => { page = 1; renderTable(); }));
+$('#perPage').onchange = e => { per = +e.target.value; page = 1; renderTable(); };
+$('#btnReset').onclick = () => { ['#q', '#fPlot', '#fCrop', '#fStatus', '#fHealth'].forEach(s => $(s).value = ''); page = 1; renderTable(); };
+$('#pager').addEventListener('click', e => { const b = e.target.closest('[data-pg]'); if (b && !b.disabled) { page = +b.dataset.pg; renderTable(); } });
+$('#chkAll').onchange = e => $$('.rowchk').forEach(c => c.checked = e.target.checked);
+$('#btnClear').onclick = () => { $('#chkAll').checked = false; $$('.rowchk').forEach(c => c.checked = false); };
+$('#treeBody').addEventListener('click', e => {
+  if (e.target.closest('.rowchk')) return;
+  const m = e.target.closest('[data-menu]');
+  if (m) { e.stopPropagation(); const t = TREES.find(x => x.id === m.dataset.menu); UI.menu(m, [
+    { t: 'ดูรายละเอียด', icon: 'eye', onClick: () => { sel = t; renderTable(); renderDetail(); } },
+    { t: 'บันทึกการเติบโต', icon: 'ruler', href: 'growth-monitoring.html' },
+    { t: 'แจ้งความผิดปกติ', icon: 'triangle-alert', href: 'pest-management.html' },
+    { t: 'เปลี่ยนสถานะต้น', icon: 'refresh-cw', onClick: () => UI.formModal(`เปลี่ยนสถานะ ${t.id}`, [{ n: 'status', l: 'สถานะใหม่', t: 'select', o: ['ปกติ', 'เฝ้าระวัง', 'ต้องดูแล', 'ตาย/ตัดทิ้ง', 'ปลูกซ่อม'] }, { n: 'reason', l: 'เหตุผล (บันทึกใน tree_status_history)', t: 'textarea', full: true, req: true }], { api: 'PATCH /api/v1/trees/{id}' }) }
+  ]); return; }
+  const tr = e.target.closest('tr[data-id]'); if (tr) { sel = TREES.find(x => x.id === tr.dataset.id); renderTable(); renderDetail(); if (window.innerWidth < 1536) $('#detail').scrollIntoView({ behavior: 'smooth' }); }
+});
+$('#detail').addEventListener('click', e => {
+  const tb = e.target.closest('[data-tab]'); if (tb) { tab = tb.dataset.tab; renderDetail(); }
+  if (e.target.closest('#closeDetail')) { sel = null; renderTable(); renderDetail(); }
+  if (e.target.closest('#printQR')) printQR([sel]);
+});
+function printQR(list) {
+  const w = window.open('', '_blank'); if (!w) { UI.toast('เบราว์เซอร์บล็อกหน้าต่างพิมพ์'); return; }
+  w.document.write(`<html><head><title>ป้าย QR ต้นไม้</title><style>body{font-family:Prompt,sans-serif;display:flex;flex-wrap:wrap;gap:12px;padding:12px}.lb{border:1px dashed #999;padding:10px;text-align:center;width:170px}</style></head><body>${list.map(t => `<div class="lb"><div id="q_${t.id}"></div><b>${t.id}</b><div style="font-size:12px">${FRUIT[t.crop].th} · ${t.variety} · แปลง ${t.plot}</div></div>`).join('')}<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script><script>window.onload=()=>{${JSON.stringify(list.map(t => t.id))}.forEach(id=>new QRCode(document.getElementById('q_'+id),{text:'https://fruit.bugpairoj.local/t/'+id,width:140,height:140}));setTimeout(()=>print(),500)}<\/script></body></html>`);
+  w.document.close();
+}
+$('#btnPrintQR').onclick = () => { const ids = $$('.rowchk:checked').map(c => c.value); const list = ids.length ? TREES.filter(t => ids.includes(t.id)) : (sel ? [sel] : []); if (!list.length) { UI.toast('เลือกต้นไม้ที่ต้องการพิมพ์ป้าย QR'); return; } printQR(list); };
+$('#btnExport').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, [{ t: 'ส่งออก CSV (UTF-8 BOM)', icon: 'file-spreadsheet', onClick: exportCSV }, { t: 'พิมพ์ / PDF', icon: 'printer', onClick: () => window.print() }]); };
+$('#btnMore').onclick = e => { e.stopPropagation(); UI.menu(e.currentTarget, [{ t: 'นำเข้าต้นไม้ (CSV/XLSX)', icon: 'upload', onClick: () => UI.toast('อัปโหลดไฟล์ → dry-run → ยืนยันนำเข้า') }, { t: 'ย้ายต้นไม้ข้ามแปลง', icon: 'move', onClick: () => UI.toast('เลือกต้นไม้ แล้วกำหนดแปลงปลายทาง') }, { t: 'ประวัติการเปลี่ยนแปลง', icon: 'history', href: 'settings.html' }]); };
+function exportCSV() {
+  const rows = filtered(), head = ['รหัสต้นไม้', 'ชนิดพืช', 'สายพันธุ์', 'แปลง', 'อายุ(ปี)', 'สถานะ', 'คะแนนสุขภาพ', 'วันวัดล่าสุด'];
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const csv = '﻿' + [head, ...rows.map(t => [t.id, FRUIT[t.crop].th, t.variety, t.plot, t.age, t.st, t.score, thDate(t.last)])].map(r => r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'trees_export.csv'; a.click(); URL.revokeObjectURL(a.href);
+  UI.toast(`ส่งออก ${nf(rows.length)} รายการแล้ว`);
+}
+window.FORMS = {
+  tree: () => UI.formModal('เพิ่มต้นไม้', [
+    { n: 'tag', l: 'รหัสต้นไม้ (Tag/QR)', req: true, ph: 'TUR-A1-421' }, { n: 'plot', l: 'แปลง', t: 'select', o: PLOTS, req: true },
+    { n: 'crop', l: 'ชนิดพืช', t: 'select', o: Object.values(FRUIT).map(f => f.th) }, { n: 'variety', l: 'สายพันธุ์', ph: 'หมอนทอง' },
+    { n: 'planted', l: 'วันที่ปลูก', t: 'date', req: true }, { n: 'rootstock', l: 'ต้นตอ (Rootstock)' },
+    { n: 'lat', l: 'ละติจูด', t: 'number' }, { n: 'lng', l: 'ลองจิจูด', t: 'number' }, { n: 'note', l: 'หมายเหตุ', t: 'textarea', full: true }
+  ], { api: 'POST /api/v1/trees' }),
+  treeEdit: () => sel && UI.formModal(`แก้ไขข้อมูล ${sel.id}`, [
+    { n: 'variety', l: 'สายพันธุ์', v: sel.variety }, { n: 'plot', l: 'แปลง', t: 'select', o: PLOTS, v: sel.plot },
+    { n: 'status', l: 'สถานะ', t: 'select', o: ['ปกติ', 'เฝ้าระวัง', 'ต้องดูแล'], v: sel.st }, { n: 'score', l: 'คะแนนสุขภาพ', t: 'number', v: sel.score },
+    { n: 'reason', l: 'เหตุผลการแก้ไข (Audit)', t: 'textarea', full: true, req: true }
+  ], { api: 'PATCH /api/v1/trees/{id}', onSave: d => { Object.assign(sel, { variety: d.variety, plot: d.plot, st: d.status, score: +d.score || sel.score }); renderTable(); renderDetail(); } })
+};
+renderTable(); renderDetail();
+</script>
+</body>
+</html>
